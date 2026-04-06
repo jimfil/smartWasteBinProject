@@ -25,8 +25,10 @@ The project is developed incrementally throughout the semester, with each lab in
 - **Real-time PIR sensing** via GPIO on Raspberry Pi
 - **Noise filtering** with configurable `min_high` duration and `cooldown` debounce
 - **Concurrent producer/consumer pipeline** using Python threads and a bounded queue
+- **Self-describing JSON-LD output** with inlined `@context`, `@type`, and entity references (sensor, wastebin, environment)
 - **Structured JSONL logging** with event timestamps, ingest time, and pipeline latency
 - **Live metrics** (produced, consumed, dropped, queue depth) via `--verbose` flag
+- **Dockerized deployment** via `Dockerfile` + `docker-compose.yml` with GPIO pass-through, named volumes, and resource limits
 - **Mock-based testing** using `gpiozero`'s `MockFactory` — no hardware required for development
 
 ---
@@ -36,12 +38,21 @@ The project is developed incrementally throughout the semester, with each lab in
 ```
 smartWasteBinProject/
 ├── src/
-│   ├── pipeline.py         # Main entry point — CLI + producer/consumer threads
-│   ├── test_mock.py        # Mock hardware test (runs pipeline with simulated GPIO)
-│   └── pirlib/
-│       ├── __init__.py
-│       ├── sampler.py      # PirSampler: reads raw GPIO pin state via gpiozero
-│       └── interpreter.py  # PirInterpreter: debounce & event detection logic
+│   ├── pipeline.py           # Main entry point — CLI + producer/consumer threads
+│   ├── test_mock.py          # Mock hardware test (runs pipeline with simulated GPIO)
+│   ├── Dockerfile            # Container image definition (python:3.11-slim)
+│   ├── docker-compose.yml    # Single-command deployment with volumes & resource limits
+│   ├── .dockerignore         # Excludes caches, venvs, and output from build context
+│   ├── requirements.txt      # Pinned Python dependencies for reproducible builds
+│   ├── pirlib/
+│   │   ├── __init__.py
+│   │   ├── sampler.py        # PirSampler: reads raw GPIO pin state via gpiozero
+│   │   └── interpreter.py    # PirInterpreter: debounce & event detection logic
+│   └── models/
+│       ├── context.jsonld     # Shared JSON-LD @context (SOSA, SSN, SAREF, BOT, custom)
+│       ├── sensor.jsonld      # PIR sensor entity description
+│       ├── wastebin.jsonld    # Smart wastebin entity description
+│       └── environment.jsonld # Deployment environment (kypes-02) description
 ├── requirements.txt
 └── README.md
 ```
@@ -149,7 +160,15 @@ Restructure the project into a modular, concurrent data pipeline. Separate sensi
 
 Containerize the Smart Waste Bin into a Docker image (or multiple images) and define its deployment with Docker Compose, so that the full system starts, runs, and persists data with a single `docker compose up`.
 
-**Status: Pending**
+**Status: Complete**
+
+---
+
+### Milestone 5 — Lab 05: Context-aware Data Modeling
+
+Model the Smart Waste Bin system using JSON-LD. Describe sensors, the wastebin, and the deployment environment as structured entities with explicit relationships between them. The pipeline now produces self-describing output with inlined `@context` and entity references.
+
+**Status: Complete**
 
 ---
 

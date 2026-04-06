@@ -1,0 +1,27 @@
+{
+  "@context": "context.jsonld",
+  "@id": "urn:env:kypes-02",
+  "@type": "bot:Space",
+  "name": "kypes-02",
+  "description": "kypes-02, Department of Electrical and Computer Engineering, University of Patras, Greece.",
+  "pipeline:university": "University of Patras",
+  "pipeline:department": "Electrical and Computer Engineering",
+  "pipeline:roomName": "kypes",
+  "pipeline:roomNumber": 2,
+  "pipeline:buildingName": "Engineering Building A",
+  "pipeline:floorNumber": 0,
+  "address": {
+    "addressLocality": "Patras",
+    "addressCountry": "GR"
+  },
+  "pipeline:indoorOutdoor": "indoor",
+  "pipeline:trafficLevel": "medium",
+  "pipeline:contains": [
+    {
+      "@id": "urn:wastebin:bin-01"
+    },
+    {
+      "@id": "urn:dev:team05:pir-01"
+    }
+  ]
+}

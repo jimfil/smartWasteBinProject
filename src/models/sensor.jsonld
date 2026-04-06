@@ -1,0 +1,28 @@
+{
+  "@context": "context.jsonld",
+  "@id": "urn:dev:team05:pir-01",
+  "@type": "sosa:Sensor",
+  "name": "HC-SR501 PIR Motion Sensor",
+  "description": "HC-SR501 passive infrared (PIR) motion sensor mounted on wastebin bin-01 in the lab environment. Detects motion by sensing changes in infrared radiation emitted by warm bodies within its detection cone.",
+  "manufacturer": "Generic / HICHIP",
+  "model": "HC-SR501",
+  "sosa:observes": "sosa:Motion",
+  "ssn:detects": "Changes in infrared radiation from warm bodies (humans) moving within the detection cone",
+  "pipeline:gpioPin": 7,
+  "pipeline:operatingVoltage": "5V DC",
+  "pipeline:detectionRange": "up to 7 metres",
+  "pipeline:detectionAngle": "less than 120 degrees cone",
+  "pipeline:cooldownSeconds": 5.0,
+  "pipeline:minHighSeconds": 0.5,
+  "pipeline:operatingTemperature": "-15°C to +70°C",
+  "pipeline:indoorOutdoor": "indoor",
+  "pipeline:mountedOn": {
+    "@id": "urn:wastebin:bin-01"
+  },
+  "pipeline:deployedIn": {
+    "@id": "urn:env:kypes-02"
+  },
+  "installationDate": "2026-03-31",
+  "pipeline:statusSensor": "active",
+  "identifier": "pir-01"
+}

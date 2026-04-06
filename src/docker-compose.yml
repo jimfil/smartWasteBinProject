@@ -1,0 +1,21 @@
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    devices:
+      - "/dev/gpiomem0:/dev/gpiomem"
+      - "/dev/gpiochip0:/dev/gpiochip0"
+    volumes:
+      - pipeline-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+    restart: unless-stopped
+    command: [ "python", "pipeline.py", "--device-id", "pir-docker-01", "--pin", "4", "--sample-interval", "0.1", "--cooldown", "5", "--min-high", "0.2", "--queue-size", "50", "--consumer-delay", "0.5", "--duration", "6000", "--out", "/data/motion_pipeline.jsonl", "--verbose" ]
+
+volumes:
+  pipeline-data:

@@ -1,0 +1,50 @@
+{
+    "@context": {
+        "@vocab": "https://schema.org/",
+        "sosa": "http://www.w3.org/ns/sosa/",
+        "ssn": "http://www.w3.org/ns/ssn/",
+        "saref": "https://saref.etsi.org/core/",
+        "bot": "https://w3id.org/bot#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "schema": "https://schema.org/",
+        "pipeline": "https://github.com/jimfil/smartWasteBinProject/blob/main/docs/ontology.md#",
+        "event_time": {
+            "@id": "sosa:resultTime",
+            "@type": "xsd:dateTime"
+        },
+        "device_id": {
+            "@id": "sosa:madeBySensor",
+            "@type": "@id"
+        },
+        "event_type": "@type",
+        "motion_state": "pipeline:motionState",
+        "seq": {
+            "@id": "pipeline:sequenceNumber",
+            "@type": "xsd:integer"
+        },
+        "run_id": {
+            "@id": "pipeline:runId",
+            "@type": "xsd:string"
+        },
+        "ingest_time": {
+            "@id": "pipeline:ingestTime",
+            "@type": "xsd:dateTime"
+        },
+        "pipeline_latency_ms": {
+            "@id": "pipeline:pipelineLatencyMs",
+            "@type": "xsd:float"
+        },
+        "sensor_ref": {
+            "@id": "pipeline:sensorRef",
+            "@type": "@id"
+        },
+        "wastebin_ref": {
+            "@id": "pipeline:wastebinRef",
+            "@type": "@id"
+        },
+        "environment_ref": {
+            "@id": "pipeline:environmentRef",
+            "@type": "@id"
+        }
+    }
+}

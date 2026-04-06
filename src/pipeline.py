@@ -1,6 +1,7 @@
 import json
 import time
 import uuid
+import os
 import click
 import threading
 from queue import Queue, Full, Empty
@@ -9,6 +10,20 @@ from typing import Dict, Any
 
 from pirlib.sampler import PirSampler
 from pirlib.interpreter import PirInterpreter
+
+SENSOR_ID      = "urn:dev:team05:pir-01"
+WASTEBIN_ID    = "urn:wastebin:bin-01"
+ENVIRONMENT_ID = "urn:env:kypes-02"
+
+_MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
+
+def _load_context() -> dict:
+    path = os.path.join(_MODELS_DIR, "context.jsonld")
+    with open(path) as f:
+        ctx = json.load(f)
+    return ctx["@context"]
+
+JSONLD_CONTEXT = _load_context()
 
 
 def utc_now_iso() -> str:
@@ -43,12 +58,20 @@ def producer_loop(
         for event in events:
             seq += 1
             record = {
-                "event_time": utc_now_iso(),
-                "device_id": device_id,
-                "event_type": "motion",
-                "motion_state": "detected",
-                "seq": seq,
-                "run_id": run_id,
+                "@context":        JSONLD_CONTEXT,
+                "@type":           "sosa:Observation",
+
+                "device_id":       SENSOR_ID,
+                "sensor_ref":      SENSOR_ID,
+                "wastebin_ref":    WASTEBIN_ID,
+                "environment_ref": ENVIRONMENT_ID,
+
+                "event_time":      utc_now_iso(),
+                "event_type":      "motion",
+                "motion_state":    "detected",
+
+                "seq":             seq,
+                "run_id":          run_id,
             }
 
             try:
@@ -77,11 +100,11 @@ def consumer_loop(
             current_utc_iso = utc_now_iso()
             record["ingest_time"] = current_utc_iso
 
-            event_dt = parse_iso_utc(record["event_time"])
+            event_dt  = parse_iso_utc(record["event_time"])
             ingest_dt = parse_iso_utc(record["ingest_time"])
-            
+
             latency_s = (ingest_dt - event_dt).total_seconds()
-            record["pipeline_latency_ms"] = int(latency_s * 1000)
+            record["pipeline_latency_ms"] = round(latency_s * 1000, 3)
 
             f.write(json.dumps(record) + "\n")
             f.flush()
@@ -90,7 +113,7 @@ def consumer_loop(
             current_qsize = event_q.qsize()
             if current_qsize > metrics["max_queue"]:
                 metrics["max_queue"] = current_qsize
-                
+
             event_q.task_done()
 
             if consumer_delay > 0:
