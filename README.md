@@ -40,7 +40,7 @@ smartWasteBinProject/
 ├── src/
 │   ├── pipeline.py           # Main entry point — CLI + producer/consumer threads
 │   ├── test_mock.py          # Mock hardware test (runs pipeline with simulated GPIO)
-│   ├── Dockerfile            # Container image definition (python:3.11-slim)
+│   ├── Dockerfile            # Container image definition (python:3.11 -slim)
 │   ├── docker-compose.yml    # Single-command deployment with volumes & resource limits
 │   ├── .dockerignore         # Excludes caches, venvs, and output from build context
 │   ├── requirements.txt      # Pinned Python dependencies for reproducible builds
