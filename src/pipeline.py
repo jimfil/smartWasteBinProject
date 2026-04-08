@@ -1,15 +1,20 @@
+import sys
+import os
+
+# Add root folder to sys.path to allow absolute imports from 'src'
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import json
 import time
 import uuid
-import os
 import click
 import threading
 from queue import Queue, Full, Empty
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from pirlib.sampler import PirSampler
-from pirlib.interpreter import PirInterpreter
+from src.pirlib.sampler import PirSampler
+from src.pirlib.interpreter import PirInterpreter
 
 SENSOR_ID      = "urn:dev:team05:pir-01"
 WASTEBIN_ID    = "urn:wastebin:bin-01"

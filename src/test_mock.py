@@ -3,8 +3,8 @@ import sys
 import threading
 import time
 
-# Add src to python path so we can import modules
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+# Add root folder to sys.path to allow absolute imports from 'src'
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 os.environ["GPIOZERO_PIN_FACTORY"] = "mock"
 from gpiozero import Device
@@ -30,7 +30,7 @@ t = threading.Thread(target=simulate_motion, args=(18,), daemon=True)
 t.start()
 
 # Now import and run the pipeline
-import pipeline
+from src import pipeline
 from click.testing import CliRunner
 
 runner = CliRunner()
