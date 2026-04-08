@@ -179,4 +179,5 @@ Model the Smart Waste Bin system using JSON-LD. Describe sensors, the wastebin, 
 - [Lab 02 — Sensor Integration](https://gbouloukakis.com/courses/ck801-s26/labs/sensor_integration_code/)
 - [Lab 03 — Concurrent Data Pipelines](https://gbouloukakis.com/courses/ck801-s26/labs/pipelines/)
 - [Lab 04 — Portable Data Pipelines](https://gbouloukakis.com/courses/ck801-s26/labs/containers/)
+- [Lab 05 — Context-aware Data Modeling](https://gbouloukakis.com/courses/ck801-s26/labs/data_models/)
 - [gpiozero Documentation](https://gpiozero.readthedocs.io/)
