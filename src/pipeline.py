@@ -91,6 +91,11 @@ def consumer_loop(
     stop_flag: dict,
 ):
     path = "data/" + out_file
+    
+    data_dir = os.path.dirname(path)
+    if data_dir:
+        os.makedirs(data_dir, exist_ok=True)
+
     with open(path, "a") as f:
         while not stop_flag["stop"] or not event_q.empty():
             try:
