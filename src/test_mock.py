@@ -43,7 +43,7 @@ result = runner.invoke(pipeline.main, [
     "--queue-size", "100",
     "--consumer-delay", "0.0",
     "--duration", "5",
-    "--out", "motion_pipeline.jsonl",
+    "--out", "motion_pipeline.log",
     "--verbose"
 ])
 

@@ -22,13 +22,8 @@ ENVIRONMENT_ID = "urn:env:kypes-02"
 
 _MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
 
-def _load_context() -> dict:
-    path = os.path.join(_MODELS_DIR, "context.jsonld")
-    with open(path) as f:
-        ctx = json.load(f)
-    return ctx["@context"]
-
-JSONLD_CONTEXT = _load_context()
+# Use a remote context URL to avoid massive inline context dictionaries in the output
+JSONLD_CONTEXT = "https://raw.githubusercontent.com/jimfil/smartWasteBinProject/main/src/models/context.jsonld"
 
 
 def utc_now_iso() -> str:
@@ -95,7 +90,8 @@ def consumer_loop(
     metrics: dict,
     stop_flag: dict,
 ):
-    with open(out_file, "a") as f:
+    path = "data/" + out_file
+    with open(path, "a") as f:
         while not stop_flag["stop"] or not event_q.empty():
             try:
                 record = event_q.get(timeout=0.5)
@@ -134,7 +130,7 @@ def consumer_loop(
 @click.option("--queue-size", type=int, required=True, help="Maximum number of items the queue can hold")
 @click.option("--consumer-delay", type=float, default=0.0, help="Artificial delay in seconds for the consumer")
 @click.option("--duration", type=float, required=True, help="How long to run the pipeline in seconds")
-@click.option("--out", required=True, help="Path to the output JSONL file")
+@click.option("--out", default="motion_pipeline.log", help="Path to the output JSONL file")
 @click.option("--verbose", is_flag=True, help="Print status messages to the terminal")
 def main(
     device_id: str,
