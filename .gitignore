@@ -5,6 +5,7 @@ venv/
 env/
 ENV/
 *.jsonl
+*.log
 output/
 .vscode/
 .idea/
