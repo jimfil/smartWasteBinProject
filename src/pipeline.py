@@ -1,9 +1,3 @@
-import sys
-import os
-
-# Add root folder to sys.path to allow absolute imports from 'src'
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import json
 import time
 import uuid
@@ -13,16 +7,13 @@ from queue import Queue, Full, Empty
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from src.pirlib.sampler import PirSampler
-from src.pirlib.interpreter import PirInterpreter
+from pirlib.sampler import PirSampler
+from pirlib.interpreter import PirInterpreter
 
 SENSOR_ID      = "urn:dev:team05:pir-01"
 WASTEBIN_ID    = "urn:wastebin:bin-01"
 ENVIRONMENT_ID = "urn:env:kypes-02"
 
-_MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
-
-# Use a remote context URL to avoid massive inline context dictionaries in the output
 JSONLD_CONTEXT = "https://raw.githubusercontent.com/jimfil/smartWasteBinProject/main/src/models/context.jsonld"
 
 
