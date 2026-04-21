@@ -172,6 +172,12 @@ Model the Smart Waste Bin system using JSON-LD. Describe sensors, the wastebin, 
 
 ---
 
+### Milestone 6 - Lab 06: Publish/Subscribe Messaging
+
+Replace your in-process producers–consumers (publisher/subscribers) with MQTT-based communication. Set up a Mosquitto broker, split your pipeline into a standalone components, and define a topic structure for your Smart Waste Bin system. Your publishers and subscribers should run as separate processes that communicate only through the broker.
+
+**Status: Ongoing**
+
 ## Resources
 
 - [Course Project Page](https://gbouloukakis.com/courses/ck801-s26/projects/)
@@ -180,4 +186,5 @@ Model the Smart Waste Bin system using JSON-LD. Describe sensors, the wastebin, 
 - [Lab 03 — Concurrent Data Pipelines](https://gbouloukakis.com/courses/ck801-s26/labs/pipelines/)
 - [Lab 04 — Portable Data Pipelines](https://gbouloukakis.com/courses/ck801-s26/labs/containers/)
 - [Lab 05 — Context-aware Data Modeling](https://gbouloukakis.com/courses/ck801-s26/labs/data_models/)
+- [Lab 06 — Publish/Subscribe Messaging](https://gbouloukakis.com/courses/ck801-s26/labs/pub_sub/)
 - [gpiozero Documentation](https://gpiozero.readthedocs.io/)
