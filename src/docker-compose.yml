@@ -1,21 +1,175 @@
+version: '3.8'
+
 services:
-  pipeline:
+  # MQTT Broker (message backbone)
+  broker:
+    image: eclipse-mosquitto:latest
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - broker-data:/mosquitto/data
+      - broker-logs:/mosquitto/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "$SYS/broker/clients/total", "-W", "1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # MQTT Producer (sensor data source)
+  producer:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: mqtt-producer
+    depends_on:
+      broker:
+        condition: service_healthy
     privileged: true
     devices:
       - "/dev/gpiomem0:/dev/gpiomem"
       - "/dev/gpiochip0:/dev/gpiochip0"
     volumes:
-      - pipeline-data:/app/data
+      - ./:/app
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 128M
     restart: unless-stopped
-    command: [ "python", "pipeline.py", "--device-id", "pir-docker-01", "--pin", "4", "--sample-interval", "0.1", "--cooldown", "5", "--min-high", "0.2", "--queue-size", "50", "--consumer-delay", "0.5", "--duration", "6000", "--out", "motion_pipeline.log", "--verbose" ]
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+    command: 
+      - python
+      - producer.py
+      - --device-id
+      - "urn:dev:team05:pir-01"
+      - --pin
+      - "4"
+      - --sample-interval
+      - "0.1"
+      - --cooldown
+      - "5.0"
+      - --min-high
+      - "0.5"
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --topic
+      - "smartbin/bin-01/pir-01/events"
+      - --status-topic
+      - "smartbin/bin-01/pir-01/status"
+      - --qos
+      - "1"
+      - --verbose
+
+  # MQTT Consumer (event logger)
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-consumer
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+      - output-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+    command:
+      - python
+      - consumer.py
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --topic
+      - "smartbin/bin-01/pir-01/events"
+      - --qos
+      - "1"
+      - --out
+      - "/data/motion_events.jsonl"
+      - --verbose
+
+  # MQTT Dashboard (real-time event viewer)
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-dashboard
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+    command:
+      - python
+      - dashboard.py
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --topic
+      - "smartbin/#"
+      - --verbose
+
+  # MQTT Archiver (permanent data archive)
+  archiver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-archiver
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+      - output-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+    command:
+      - python
+      - archiver.py
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --topic
+      - "smartbin/#"
+      - --out
+      - "/data/archive.jsonl"
+      - --verbose
 
 volumes:
-  pipeline-data:
+  broker-data:
+  broker-logs:
+  output-data:
+
