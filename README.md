@@ -24,7 +24,7 @@ The project is developed incrementally throughout the semester, with each lab in
 
 - **Real-time PIR sensing** via GPIO on Raspberry Pi
 - **Noise filtering** with configurable `min_high` duration and `cooldown` debounce
-- **Concurrent producer/consumer pipeline** using Python threads and a bounded queue
+- **Distributed Pub/Sub Architecture** using MQTT protocol (Eclipse Mosquitto)
 - **Self-describing JSON-LD output** with inlined `@context`, `@type`, and entity references (sensor, wastebin, environment)
 - **Structured JSONL logging** with event timestamps, ingest time, and pipeline latency
 - **Live metrics** (produced, consumed, dropped, queue depth) via `--verbose` flag
@@ -38,8 +38,9 @@ The project is developed incrementally throughout the semester, with each lab in
 ```
 smartWasteBinProject/
 ├── src/
-│   ├── pipeline.py           # Main entry point — CLI + producer/consumer threads
-│   ├── test_mock.py          # Mock hardware test (runs pipeline with simulated GPIO)
+│   ├── producer.py           # MQTT Publisher: reads sensor and publishes events
+│   ├── consumer.py           # MQTT Subscriber: receives events and logs to file
+│   ├── dashboard.py          # MQTT Subscriber: displays real-time events in console
 │   ├── Dockerfile            # Container image definition (python:3.11 -slim)
 │   ├── docker-compose.yml    # Single-command deployment with volumes & resource limits
 │   ├── .dockerignore         # Excludes caches, venvs, and output from build context
@@ -61,15 +62,15 @@ smartWasteBinProject/
 
 ## How It Works
 
-The pipeline consists of two concurrent threads: the producer and the consumer.
-
+The system uses a decentralized **Publish/Subscribe** architecture over MQTT.
 
 1. **`PirSampler`** reads the raw digital value from the GPIO pin at a configurable interval.
 2. **`PirInterpreter`** applies two filters:
    - **`min_high`**: the pin must stay HIGH for at least N seconds before an event is emitted.
    - **`cooldown`**: a minimum interval between successive events to avoid re-triggering.
-3. **Producer thread** calls sampler + interpreter and pushes `motion` events onto a bounded `Queue`.
-4. **Consumer thread** dequeues events, enriches them with an `ingest_time` and `pipeline_latency_ms`, and writes each record as a JSON line to the output file.
+3. **`producer.py`** (Publisher) calls the sampler + interpreter and publishes clean `motion` events to an MQTT broker under a specific topic (e.g., `smartbin/bin-01/pir-01/events`).
+4. **`consumer.py`** (Subscriber) listens to the topic, enriches arriving events with an `ingest_time` and `pipeline_latency_ms`, and writes each record as a JSON line to the output file.
+5. **`dashboard.py`** (Subscriber) can independently listen to the broker and display real-time events without interfering with the data logging.
 
 ### Output Record Format (JSONL)
 
@@ -104,29 +105,33 @@ cd smartWasteBinProject
 pip install -r requirements.txt
 ```
 
-### Running on Raspberry Pi (real hardware)
+### Running the System
 
+You will need an MQTT Broker (like Mosquitto) running. You can start one via Docker or install it locally.
+
+**1. Start the Consumer (Logger)**
 ```bash
-python src/pipeline.py \
-  --device-id pir-01 \
-  --pin 18 \
-  --sample-interval 0.1 \
-  --cooldown 2.0 \
-  --min-high 0.3 \
-  --queue-size 100 \
-  --duration 60 \
+python src/consumer.py \
+  --broker localhost \
+  --topic "smartbin/bin-01/pir-01/events" \
   --out events.jsonl \
   --verbose
 ```
 
-### Running with Mock GPIO (no hardware needed)
-
+**2. Start the Producer (Sensor)**
 ```bash
-cd src
-python test_mock.py
+python src/producer.py \
+  --device-id pir-01 \
+  --pin 4 \
+  --broker localhost \
+  --topic "smartbin/bin-01/pir-01/events" \
+  --verbose
 ```
 
-This simulates two motion pulses on GPIO pin 18 and runs the full pipeline for 5 seconds, writing output to `motion_pipeline.jsonl`.
+**3. Start the Dashboard (Optional)**
+```bash
+python src/dashboard.py --broker localhost --topic "smartbin/#"
+```
 
 ---
 
