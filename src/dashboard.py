@@ -27,7 +27,7 @@ COLORS = {
 # Track metrics by topic
 topic_metrics = defaultdict(lambda: {"count": 0, "last_time": None})
 
-def on_connect(client, userdata, flags, rc, properties):
+def on_connect(client, userdata, flags, rc):
     """Callback when client connects to broker."""
     broker = userdata.get("broker", "localhost")
     port = userdata.get("port", 1883)
@@ -108,8 +108,9 @@ def main(broker: str, port: int, topic: str, qos: int, verbose: bool):
     - Independently displays information without coupling to producers
     - Easy to add visualization, alerting, or other logic
     """
-    client = mqtt.Client(CallbackAPIVersion.VERSION2)
-    
+    print("test1")
+    client = mqtt.Client()
+    print("test2")
     # Prepare userdata
     userdata = {
         "broker": broker,
