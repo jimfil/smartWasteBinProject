@@ -13,6 +13,11 @@ services:
       - broker-logs:/mosquitto/log
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "127.0.0.1", "-p", "1883", "-t", "health/ping", "-E"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # MQTT Producer (sensor data source)
   producer:
