@@ -1,4 +1,0 @@
-click==8.1.7
-gpiozero==2.0.1
-rpi-lgpio
-paho-mqtt

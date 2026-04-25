@@ -1,7 +1,4 @@
-# Smart Waste Bin — Python dependencies
-
-# GPIO interface for Raspberry Pi (supports mock pin factory for dev/testing)
-gpiozero
-
-# CLI framework used by pipeline.py
-click
+click==8.1.7
+gpiozero==2.0.1
+rpi-lgpio
+paho-mqtt
