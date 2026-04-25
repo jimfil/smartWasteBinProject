@@ -12,7 +12,7 @@ services:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mosquitto_sub", "-h", "127.0.0.1", "-p", "1883", "-t", "health/ping", "-E"]
+      test: [ "CMD", "mosquitto_sub", "-h", "127.0.0.1", "-p", "1883", "-t", "health/ping", "-E" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -36,7 +36,7 @@ services:
     environment:
       BROKER_HOST: broker
       BROKER_PORT: 1883
-    command: 
+    command:
       - python
       - src/producer.py
       - --device-id
@@ -77,7 +77,6 @@ services:
     environment:
       BROKER_HOST: broker
       BROKER_PORT: 1883
-      PYTHONUNBUFFERED: "1"
     command:
       - python
       - src/consumer.py
