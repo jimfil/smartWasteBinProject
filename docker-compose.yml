@@ -32,11 +32,6 @@ services:
       - "/dev/gpiochip0:/dev/gpiochip0"
     volumes:
       - ./:/app
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 128M
     restart: unless-stopped
     environment:
       BROKER_HOST: broker
@@ -78,11 +73,6 @@ services:
     volumes:
       - ./:/app
       - ./data:/data
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 128M
     restart: unless-stopped
     environment:
       BROKER_HOST: broker
@@ -116,11 +106,6 @@ services:
         condition: service_healthy
     volumes:
       - ./:/app
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 128M
     restart: unless-stopped
     environment:
       BROKER_HOST: broker
@@ -149,11 +134,6 @@ services:
     volumes:
       - ./:/app
       - ./data:/data
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 128M
     restart: unless-stopped
     environment:
       BROKER_HOST: broker
