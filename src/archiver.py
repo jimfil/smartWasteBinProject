@@ -11,7 +11,7 @@ import paho.mqtt.client as mqtt
 import json
 import click
 from datetime import datetime, timezone
-
+from paho.mqtt.enums import CallbackAPIVersion
 def utc_now_iso() -> str:
     """Get current UTC time in ISO format."""
     return (
@@ -24,7 +24,7 @@ def parse_iso_utc(s: str) -> datetime:
     """Parse ISO UTC string back to datetime."""
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties):
     """Callback when client connects to broker."""
     broker = userdata.get("broker", "localhost")
     port = userdata.get("port", 1883)
@@ -87,7 +87,7 @@ def main(broker: str, port: int, topic: str, qos: int, out: str, verbose: bool):
     - Independent component that doesn't affect producers or other consumers
     - Useful for analytics, auditing, and debugging
     """
-    client = mqtt.Client()
+    client = mqtt.Client(CallbackAPIVersion.VERSION2)
     
     # Prepare userdata
     metrics = {"archived": 0, "dropped": 0}

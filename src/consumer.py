@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt
 import json
 import click
 from datetime import datetime, timezone
-
+from paho.mqtt.enums import CallbackAPIVersion
 
 def utc_now_iso() -> str:
     return (
@@ -26,18 +26,17 @@ def parse_iso_utc(s: str) -> datetime:
 
 BROKER_ADDRESS = "localhost"
 BROKER_PORT = 1883
-STATUS_TOPIC = "smartbin/bin-01/pir-01/status"
 
-
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties):
     """Callback that executes when the client connects to the broker."""
     topic = userdata["topic"]
+    status_topic = userdata["status_topic"]
     if rc == 0:
         print(f"[Consumer] Successfully connected to broker at {userdata['broker']}:{userdata['port']}")
         client.subscribe(topic, qos=userdata["qos"])
         print(f"[Consumer] Subscribed to topic: {topic}")
-        client.subscribe(STATUS_TOPIC, qos=userdata["qos"])
-        print(f"[Consumer] Subscribed to status topic: {STATUS_TOPIC}")
+        client.subscribe(status_topic, qos=userdata["qos"])
+        print(f"[Consumer] Subscribed to status topic: {status_topic}")
     else:
         print(f"[Consumer] Connection failed with code: {rc}")
 
@@ -51,7 +50,7 @@ def on_message(client, userdata, msg):
     payload = msg.payload.decode('utf-8')
     
     # Check if this is a status message (retained)
-    if msg.topic == STATUS_TOPIC:
+    if msg.topic == userdata["status_topic"]:
         print(f"[Consumer] Producer status: {payload}")
         metrics["status_updates"] += 1
         return
@@ -87,15 +86,16 @@ def on_message(client, userdata, msg):
 @click.option("--broker", default="localhost", help="MQTT Broker address")
 @click.option("--port", type=int, default=1883, help="MQTT Broker port")
 @click.option("--topic", type=str, default="smartbin/bin-01/pir-01/events", help="MQTT topic for events")
+@click.option("--status-topic", default="smartbin/bin-01/pir-01/status", help="MQTT topic for sensor status")
 @click.option("--qos", type=int, default=1, help="MQTT QoS (0=At most once, 1=At least once, 2=Exactly once)")
 @click.option("--out", required=True, help="Path to the output JSONL file")
 @click.option("--verbose", is_flag=True, help="Print status messages to the terminal")
-def main(broker: str, port: int, topic: str, qos: int, out: str, verbose: bool):
+def main(broker: str, port: int, topic: str, status_topic: str, qos: int, out: str, verbose: bool):
     """
     MQTT Consumer: subscribes to motion events and logs them to a file.
     """
     # Creating an MQTT client
-    client = mqtt.Client()
+    client = mqtt.Client(CallbackAPIVersion.VERSION2)
     
     # Prepare userdata for callbacks
     metrics = {
@@ -107,6 +107,7 @@ def main(broker: str, port: int, topic: str, qos: int, out: str, verbose: bool):
         "broker": broker,
         "port": port,
         "topic": topic,
+        "status_topic": status_topic,
         "qos": qos,
         "metrics": metrics,
         "out_file": out,

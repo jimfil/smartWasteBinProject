@@ -27,7 +27,7 @@ COLORS = {
 # Track metrics by topic
 topic_metrics = defaultdict(lambda: {"count": 0, "last_time": None})
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties):
     """Callback when client connects to broker."""
     broker = userdata.get("broker", "localhost")
     port = userdata.get("port", 1883)

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MQTT Broker (message backbone)
   broker:
@@ -98,6 +96,8 @@ services:
       - "1883"
       - --topic
       - "smartbin/bin-01/pir-01/events"
+      - --status-topic
+      - "smartbin/bin-01/pir-01/status"
       - --qos
       - "1"
       - --out

@@ -77,9 +77,6 @@ def main(
     signal.signal(signal.SIGINT, handle_sigint)
 
     client = mqtt.Client(CallbackAPIVersion.VERSION2)
-    
-    client.will_set(status_topic, "offline", qos=1, retain=True)
-
     if verbose:
         print(f"[Producer] Connecting to broker {broker}:{port}...")
     client.connect(broker, port, keepalive=60)
