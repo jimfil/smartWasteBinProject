@@ -11,7 +11,7 @@ services:
       - broker-logs:/mosquitto/log
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "//$SYS/broker/clients/total", "-W", "1"]
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "\\$SYS/broker/clients/total", "-W", "1"]
       interval: 10s
       timeout: 5s
       retries: 3
