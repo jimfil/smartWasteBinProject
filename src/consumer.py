@@ -27,7 +27,7 @@ def parse_iso_utc(s: str) -> datetime:
 BROKER_ADDRESS = "localhost"
 BROKER_PORT = 1883
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties):
     """Callback that executes when the client connects to the broker."""
     topic = userdata["topic"]
     status_topic = userdata["status_topic"]

@@ -87,6 +87,7 @@ services:
     environment:
       BROKER_HOST: broker
       BROKER_PORT: 1883
+      - PYTHONUNBUFFERED=1
     command:
       - python
       - consumer.py
@@ -124,6 +125,7 @@ services:
     environment:
       BROKER_HOST: broker
       BROKER_PORT: 1883
+      - PYTHONUNBUFFERED=1
     command:
       - python
       - dashboard.py
