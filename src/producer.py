@@ -76,7 +76,7 @@ def main(
     global stop_flag
     signal.signal(signal.SIGINT, handle_sigint)
 
-    client = mqtt.Client(CallbackAPIVersion.VERSION1)
+    client = mqtt.Client(CallbackAPIVersion.VERSION2)
     
     client.will_set(status_topic, "offline", qos=1, retain=True)
 
