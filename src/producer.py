@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 
 import click
 import paho.mqtt.client as mqtt
+from paho.mqtt.enums import CallbackAPIVersion
 
 from pirlib.sampler import PirSampler
 from pirlib.interpreter import PirInterpreter
@@ -75,10 +76,10 @@ def main(
     global stop_flag
     signal.signal(signal.SIGINT, handle_sigint)
 
-    client = mqtt.Client()
+    client = mqtt.Client(CallbackAPIVersion.VERSION1)
     
     client.will_set(status_topic, "offline", qos=1, retain=True)
-    
+
     if verbose:
         print(f"[Producer] Connecting to broker {broker}:{port}...")
     client.connect(broker, port, keepalive=60)

@@ -12,7 +12,7 @@ import json
 import click
 from datetime import datetime, timezone
 from collections import defaultdict
-
+from paho.mqtt.enums import CallbackAPIVersion
 # ANSI color codes for terminal output
 COLORS = {
     "RESET": "\033[0m",
@@ -108,7 +108,7 @@ def main(broker: str, port: int, topic: str, qos: int, verbose: bool):
     - Independently displays information without coupling to producers
     - Easy to add visualization, alerting, or other logic
     """
-    client = mqtt.Client()
+    client = mqtt.Client(CallbackAPIVersion.VERSION1)
     
     # Prepare userdata
     userdata = {
