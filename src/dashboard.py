@@ -51,30 +51,37 @@ def on_message(client, userdata, msg):
     try:
         # Decode payload
         payload = msg.payload.decode('utf-8')
+        
+        topic = msg.topic
+        
+        # Check if it's a status message before JSON decoding
+        if "status" in topic:
+            status = payload
+            print(f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{status}{COLORS['RESET']}")
+            
+            # Update metrics for status messages
+            topic_metrics[topic]["count"] += 1
+            topic_metrics[topic]["last_time"] = datetime.now(timezone.utc).isoformat()
+            return
+
         record = json.loads(payload)
         
         # Extract event information
-        topic = msg.topic
         event_type = record.get("event_type", "unknown")
         device_id = record.get("device_id", "unknown")
         timestamp = record.get("event_time", "unknown")
         
-        # Check if it's a status message
-        if "status" in topic:
-            status = payload
-            print(f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{status}{COLORS['RESET']}")
-        else:
-            # Format and display event
-            print(f"{COLORS['BLUE']}[{timestamp}]{COLORS['RESET']} "
-                  f"{COLORS['GREEN']}{event_type.upper()}{COLORS['RESET']} "
-                  f"from {COLORS['CYAN']}{device_id}{COLORS['RESET']} "
-                  f"on {COLORS['BOLD']}{topic}{COLORS['RESET']}")
-            
-            # Display additional details if verbose
-            if verbose:
-                for key, value in record.items():
-                    if key not in ["@context", "@type", "device_id", "event_type", "event_time"]:
-                        print(f"  • {key}: {value}")
+        # Format and display event
+        print(f"{COLORS['BLUE']}[{timestamp}]{COLORS['RESET']} "
+              f"{COLORS['GREEN']}{event_type.upper()}{COLORS['RESET']} "
+              f"from {COLORS['CYAN']}{device_id}{COLORS['RESET']} "
+              f"on {COLORS['BOLD']}{topic}{COLORS['RESET']}")
+        
+        # Display additional details if verbose
+        if verbose:
+            for key, value in record.items():
+                if key not in ["@context", "@type", "device_id", "event_type", "event_time"]:
+                    print(f"  • {key}: {value}")
         
         # Update metrics
         topic_metrics[topic]["count"] += 1
