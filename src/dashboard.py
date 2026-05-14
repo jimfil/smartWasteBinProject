@@ -55,14 +55,18 @@ def on_message(client, userdata, msg):
         
         # 1. Handle Status messages
         if "status" in topic:
-            print(f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")
+            time_str = datetime.now().strftime('%H:%M:%S')
+            print(f"{COLORS['BLUE']}[{time_str}]{COLORS['RESET']} "
+                  f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")
             topic_metrics[topic]["count"] += 1
             topic_metrics[topic]["last_time"] = datetime.now(timezone.utc).isoformat()
             return
 
         # 2. Handle simple state topics (motion strings, event counts)
         if "motion" in topic or "event_count" in topic:
-            print(f"{COLORS['CYAN']}[Sensor State]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")
+            time_str = datetime.now().strftime('%H:%M:%S')
+            print(f"{COLORS['BLUE']}[{time_str}]{COLORS['RESET']} "
+                  f"{COLORS['CYAN']}[Sensor State]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")
             topic_metrics[topic]["count"] += 1
             topic_metrics[topic]["last_time"] = datetime.now(timezone.utc).isoformat()
             return
@@ -104,8 +108,16 @@ def on_message(client, userdata, msg):
         device_id = record.get("device_id", "unknown")
         timestamp = record.get("event_time", "unknown")
         
+        # Simplify ISO timestamp to just HH:MM:SS
+        time_str = timestamp
+        if "T" in timestamp:
+            try:
+                time_str = timestamp.split("T")[1][:8]
+            except Exception:
+                pass
+
         # Format and display event
-        print(f"{COLORS['BLUE']}[{timestamp}]{COLORS['RESET']} "
+        print(f"{COLORS['BLUE']}[{time_str}]{COLORS['RESET']} "
               f"{COLORS['GREEN']}{event_type.upper()}{COLORS['RESET']} "
               f"from {COLORS['CYAN']}{device_id}{COLORS['RESET']} "
               f"on {COLORS['BOLD']}{topic}{COLORS['RESET']}")
