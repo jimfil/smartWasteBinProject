@@ -158,9 +158,7 @@ def main(broker: str, port: int, topic: str, qos: int, verbose: bool):
     - Independently displays information without coupling to producers
     - Easy to add visualization, alerting, or other logic
     """
-    print("test1")
     client = mqtt.Client()
-    print("test2")
     # Prepare userdata
     userdata = {
         "broker": broker,

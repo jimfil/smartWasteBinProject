@@ -1,0 +1,4 @@
+producer just publishes events to a singular topic
+consumer writes events
+another subscriber publishes info to HA
+virtual sensors publish to the other subscriber or to HA
