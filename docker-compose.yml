@@ -39,7 +39,7 @@ services:
     command:
       - python
       - src/producer.py
-      - --device-id
+      - --sensor-id
       - "urn:dev:team05:pir-01"
       - --pin
       - "4"
@@ -53,12 +53,6 @@ services:
       - "broker"
       - --port
       - "1883"
-      - --topic
-      - "smartbin/bin-01/pir-01/events"
-      - --status-topic
-      - "smartbin/bin-01/pir-01/status"
-      - --qos
-      - "1"
       - --verbose
 
   # MQTT Consumer (event logger)
@@ -80,14 +74,12 @@ services:
     command:
       - python
       - src/consumer.py
+      - --sensor-id
+      - "urn:dev:team05:pir-01"
       - --broker
       - "broker"
       - --port
       - "1883"
-      - --topic
-      - "smartbin/bin-01/pir-01/events"
-      - --status-topic
-      - "smartbin/bin-01/pir-01/status"
       - --qos
       - "1"
       - --out
