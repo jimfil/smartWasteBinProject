@@ -5,6 +5,6 @@ paho-mqtt
 flask
 flask-restx
 pandas
-sklearn
+scikit-learn
 joblib
 numpy
