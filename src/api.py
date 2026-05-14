@@ -37,8 +37,11 @@ def on_connect(client, userdata, flags, rc, *args):
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
+broker_host = os.environ.get("BROKER_HOST", "localhost")
+broker_port = int(os.environ.get("BROKER_PORT", 1883))
+
 try:
-    mqtt_client.connect_async("localhost", 1883, keepalive=60)
+    mqtt_client.connect_async(broker_host, broker_port, keepalive=60)
 except Exception as e:
     print(f"Warning: MQTT connection failed: {e}")
 
@@ -104,6 +107,22 @@ publish_model = api.model("MQTTPublish", {
     "payload": fields.String(required=True, description="Message payload"),
     "qos": fields.Integer(description="Quality of Service (0, 1, or 2)", default=1),
     "retain": fields.Boolean(description="Retain this message on the broker", default=False),
+})
+
+usage_intensity_model = api.model("UsageIntensity", {
+    "state": fields.String(description="Usage state (e.g., low, medium, high)"),
+    "count": fields.Integer(description="Number of events in the window"),
+    "window_minutes": fields.Integer(description="Evaluation window size in minutes"),
+    "timestamp": fields.Float(description="Unix timestamp of the evaluation"),
+})
+
+usage_prediction_model = api.model("UsagePrediction", {
+    "prediction": fields.List(fields.String, description="Predicted usage state"),
+    "confidence": fields.Float(description="Confidence of the prediction"),
+    "predicted_hour": fields.Integer(description="The hour being predicted"),
+    "utc_prediction_timestamp": fields.Float(description="Unix timestamp when prediction was made"),
+    "model_name": fields.String(description="Name of the model used"),
+    "features_used": fields.Raw(description="Features used for the prediction")
 })
 
 events_parser = reqparse.RequestParser()
@@ -219,6 +238,44 @@ class BinEmptied(Resource):
         )
         
         return record, 201
+
+
+@ns_bins.route("/<string:bin_id>/usage_intensity")
+@ns_bins.param("bin_id", "The bin identifier")
+class BinUsageIntensity(Resource):
+    @ns_bins.response(404, "No usage intensity data found")
+    @ns_bins.marshal_with(usage_intensity_model)
+    def get(self, bin_id):
+        """Get the latest rule-based usage intensity evaluation for a bin"""
+        topic = f"smartbin/{bin_id}/usage_intensity"
+        with topic_lock:
+            if topic not in topic_store:
+                ns_bins.abort(404, f"No usage intensity data available for bin {bin_id}")
+            
+            try:
+                payload = json.loads(topic_store[topic]["payload"])
+                return payload
+            except json.JSONDecodeError:
+                ns_bins.abort(500, "Failed to parse usage intensity data")
+
+
+@ns_bins.route("/<string:bin_id>/usage_prediction")
+@ns_bins.param("bin_id", "The bin identifier")
+class BinUsagePrediction(Resource):
+    @ns_bins.response(404, "No usage prediction data found")
+    @ns_bins.marshal_with(usage_prediction_model)
+    def get(self, bin_id):
+        """Get the latest ML-based usage prediction for a bin"""
+        topic = f"smartbin/{bin_id}/usage_prediction"
+        with topic_lock:
+            if topic not in topic_store:
+                ns_bins.abort(404, f"No usage prediction data available for bin {bin_id}")
+            
+            try:
+                payload = json.loads(topic_store[topic]["payload"])
+                return payload
+            except json.JSONDecodeError:
+                ns_bins.abort(500, "Failed to parse usage prediction data")
 
 
 @ns_sensors.route("/")

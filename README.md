@@ -179,6 +179,22 @@ Replace your in-process producers–consumers (publisher/subscribers) with MQTT-
 
 **Status: Completed**
 
+---
+
+### Milestone 8 - Lab 08: REST API
+
+Add a REST API to your Smart Waste Bin using Flask and Flask-RESTx. Expose endpoints for querying bins, sensors, and events, and include MQTT endpoints that let HTTP clients publish to and read from your broker. Write an AsyncAPI spec documenting your MQTT interface. Your system should now have both a pull-based API (OpenAPI) and a push-based messaging interface (AsyncAPI), both formally documented.
+
+**Status: Completed**
+
+---
+
+### Milestone 9 - Lab 09: Virtual Sensors
+
+Build virtual sensors on top of your Smart Waste Bin pipeline. Implement a rule-based virtual sensor that derives bin usage intensity and an ML-based virtual sensor that predicts busy/quiet periods from historical patterns. Both publish their output to MQTT, appear as entities in Home Assistant, and are queryable through the REST API.
+
+**Status: Completed**
+
 ## Resources
 
 - [Course Project Page](https://gbouloukakis.com/courses/ck801-s26/projects/)

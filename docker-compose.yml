@@ -150,6 +150,89 @@ services:
       - "/data/archive.log"
       - --verbose
 
+  # REST API (Flask application)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-api
+    depends_on:
+      broker:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+      - ./data:/data
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+      PYTHONUNBUFFERED: "1"
+    command:
+      - python
+      - src/api.py
+
+  # Virtual Sensor Rules (usage intensity)
+  virtual-sensor-rules:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-virtual-sensor-rules
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+      PYTHONUNBUFFERED: "1"
+    command:
+      - python
+      - src/virtual_sensor_rules.py
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --subscribe-topic
+      - "smartbin/bin-01/pir-01/events"
+      - --publish-topic
+      - "smartbin/bin-01/usage_intensity"
+      - --bin-id
+      - "bin-01"
+
+  # Virtual Sensor ML (usage prediction)
+  virtual-sensor-ml:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-virtual-sensor-ml
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+      PYTHONUNBUFFERED: "1"
+    command:
+      - python
+      - src/virtual_sensor_ml.py
+      - --model-path
+      - "src/models/busy_predictor.joblib"
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --publish-topic
+      - "smartbin/bin-01/usage_prediction"
+      - --bin-id
+      - "bin-01"
+
 volumes:
   broker-data:
   broker-logs:
