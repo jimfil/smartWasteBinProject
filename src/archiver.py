@@ -53,7 +53,7 @@ def on_message(client, userdata, msg):
             "timestamp": utc_now_iso(),
             "qos": msg.qos,
             "retain": msg.retain,
-            "payload": json.loads(payload) if msg.topic != "smartbin/bin-01/pir-01/status" else payload,
+            "payload": json.loads(payload),
         }
         
         # Write to archive file

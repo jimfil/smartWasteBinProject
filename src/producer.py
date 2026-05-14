@@ -48,6 +48,7 @@ def publish_discovery(client, bin_id, sensor_id):
     motion_config = {
         "name": f"PIR Motion Sensor {sensor_id}", 
         "state_topic": f"smartbin/{bin_id}/{sensor_id}/motion", 
+        "value_template": "{{ value_json.state }}",
         "payload_on": "detected", 
         "payload_off": "clear", 
         "device_class": "motion", 
@@ -79,6 +80,7 @@ def publish_discovery(client, bin_id, sensor_id):
     count_config = { 
         "name": f"Motion Event Count {sensor_id}", 
         "state_topic": f"smartbin/{bin_id}/{sensor_id}/event_count", 
+        "value_template": "{{ value_json.count }}",
         "unit_of_measurement": "events", 
         "icon": "mdi:motion-sensor", 
         "unique_id": f"{bin_id}_{sensor_id}_motion_count", 
@@ -133,7 +135,7 @@ def main(
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     
-    client.will_set(status_topic, "offline", qos=1, retain=True)
+    client.will_set(status_topic, json.dumps({"state": "offline"}), qos=1, retain=True)
     
     if verbose:
         print(f"[Producer] Connecting to broker {broker}:{port}...")
@@ -181,9 +183,9 @@ def main(
             ha_motion_state = "detected"
             last_motion_iso = utc_now_iso()
             
-            # Publish HA states
-            client.publish(motion_topic, ha_motion_state, retain=True)
-            client.publish(count_topic, str(event_count), retain=True)
+            # Publish HA states in JSON format
+            client.publish(motion_topic, json.dumps({"state": ha_motion_state}), retain=True)
+            client.publish(count_topic, json.dumps({"count": event_count}), retain=True)
             status_payload = {
                 "state": "active",
                 "location": bin_data.get("location", "Unknown") if bin_data else "Unknown",
@@ -218,7 +220,7 @@ def main(
 
         if ha_motion_state == "detected" and (current_time_s - last_event_time_s) > cooldown:
             ha_motion_state = "clear"
-            client.publish(motion_topic, ha_motion_state, retain=True)
+            client.publish(motion_topic, json.dumps({"state": ha_motion_state}), retain=True)
             if verbose:
                 print(f"[Producer] Motion cleared after cooldown.")
 

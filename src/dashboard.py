@@ -51,23 +51,56 @@ def on_message(client, userdata, msg):
     try:
         # Decode payload
         payload = msg.payload.decode('utf-8')
-        
         topic = msg.topic
         
-        # Check if it's a status message before JSON decoding
+        # 1. Handle Status messages
         if "status" in topic:
-            status = payload
-            print(f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{status}{COLORS['RESET']}")
-            
-            # Update metrics for status messages
+            print(f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")
             topic_metrics[topic]["count"] += 1
             topic_metrics[topic]["last_time"] = datetime.now(timezone.utc).isoformat()
             return
 
-        record = json.loads(payload)
-        
-        # Extract event information
-        event_type = record.get("event_type", "unknown")
+        # 2. Handle simple state topics (motion strings, event counts)
+        if "motion" in topic or "event_count" in topic:
+            print(f"{COLORS['CYAN']}[Sensor State]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")
+            topic_metrics[topic]["count"] += 1
+            topic_metrics[topic]["last_time"] = datetime.now(timezone.utc).isoformat()
+            return
+
+        # 3. Try to parse as JSON
+        try:
+            record = json.loads(payload)
+        except json.JSONDecodeError:
+            # Fallback for any other non-JSON messages
+            print(f"{COLORS['CYAN']}[Raw Message]{COLORS['RESET']} {topic}: {payload}")
+            return
+
+        # If it's a valid JSON but not a dictionary (e.g. just a number or string), handle it
+        if not isinstance(record, dict):
+            print(f"{COLORS['CYAN']}[Value]{COLORS['RESET']} {topic}: {record}")
+            return
+
+        # 4. Handle Analytics topics (usage_intensity, usage_prediction)
+        if "usage_" in topic:
+            # Usage intensity uses 'state', ML prediction uses 'prediction' (which is a list)
+            state = record.get("state") or record.get("prediction")
+            if isinstance(state, list) and len(state) > 0:
+                state = state[0]
+            
+            timestamp = record.get("timestamp") or record.get("utc_prediction_timestamp")
+            time_str = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S') if timestamp else "now"
+
+            print(f"{COLORS['BLUE']}[{time_str}]{COLORS['RESET']} "
+                  f"{COLORS['YELLOW']}ANALYTICS{COLORS['RESET']} on {COLORS['BOLD']}{topic}{COLORS['RESET']}: "
+                  f"{COLORS['GREEN']}{str(state).upper() if state else 'N/A'}{COLORS['RESET']}")
+            
+            if verbose:
+                for k, v in record.items():
+                    print(f"  • {k}: {v}")
+            return
+
+        # 5. Handle standard SOSA/Observation events
+        event_type = record.get("event_type", "observation")
         device_id = record.get("device_id", "unknown")
         timestamp = record.get("event_time", "unknown")
         
@@ -87,8 +120,6 @@ def on_message(client, userdata, msg):
         topic_metrics[topic]["count"] += 1
         topic_metrics[topic]["last_time"] = timestamp
         
-    except json.JSONDecodeError as e:
-        print(f"{COLORS['RED']}[Dashboard] Failed to decode JSON: {e}{COLORS['RESET']}")
     except Exception as e:
         print(f"{COLORS['RED']}[Dashboard] Error processing message: {e}{COLORS['RESET']}")
 

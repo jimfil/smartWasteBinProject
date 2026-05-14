@@ -48,7 +48,13 @@ def on_message(client, userdata, msg, metrics, topic, out_file, verbose):
     
     # Check if this is a status message
     if msg.topic.endswith("/status"):
-        print(f"[Status] Producer status: {payload}")
+        try:
+            status_data = json.loads(payload)
+            state = status_data.get("state", "unknown")
+            print(f"[Status] Producer state: {state}")
+        except json.JSONDecodeError:
+            print(f"[Status] Received non-JSON status: {payload}")
+            
         metrics["status_updates"] += 1
         return
     
