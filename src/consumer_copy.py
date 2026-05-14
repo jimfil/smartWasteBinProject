@@ -10,10 +10,6 @@ from queue import Queue, Full, Empty
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from pirlib.sampler import PirSampler
-from pirlib.interpreter import PirInterpreter
-from apiFunc import find_sensor, find_bin
-
 def utc_now_iso() -> str:
     return (
         datetime.now(timezone.utc)
@@ -25,8 +21,6 @@ def utc_now_iso() -> str:
 def parse_iso_utc(s: str) -> datetime:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
-# Default values
-DEFAULT_SENSOR_ID = "urn:dev:team05:pir-01"
 BROKER_ADDRESS = "localhost"
 BROKER_PORT = 1883
 
@@ -77,26 +71,14 @@ def on_message(client, userdata, msg, metrics, topic, out_file, verbose):
     print(f"Statistics: {metrics['consumed']} messages consumed, {metrics['dropped']} messages dropped, {metrics['status_updates']} status updates.")
 
 @click.command()
-@click.option("--sensor-id", default=DEFAULT_SENSOR_ID, help="URN of the sensor to monitor")
+@click.option("--topic", default="smartbin/bin-01/pir-01/events", help="MQTT topic for events")
+@click.option("--status-topic", default="smartbin/bin-01/status", help="MQTT topic for sensor status")
 @click.option("--broker", default="localhost", help="MQTT Broker address")
 @click.option("--port", type=int, default=1883, help="MQTT Broker port")
 @click.option("--qos", type=int, default=1, help="MQTT QoS (0=At most once, 1=At least once, 2=Exactly once)")
 @click.option("--out", default="data/events.log", help="Path to the output JSONL file")
 @click.option("--verbose", is_flag=True, help="Print status messages to the terminal")
-def main(sensor_id: str, broker: str, port: int, qos: int, out: str, verbose: bool):
-    # Load dynamic configuration
-    sensor_data = find_sensor(sensor_id)
-    if not sensor_data:
-        print(f"Error: Sensor {sensor_id} not found in models.")
-        return
-    
-    bin_urn = sensor_data.get("mounted_on")
-    sensor_short_id = sensor_id.split(":")[-1]
-    bin_short_id = bin_urn.split(":")[-1] if bin_urn else "unknown-bin"
-    
-    events_topic = f"smartbin/{bin_short_id}/{sensor_short_id}/events"
-    status_topic = f"smartbin/{bin_short_id}/status"
-    
+def main(topic: str, status_topic: str, broker: str, port: int, qos: int, out: str, verbose: bool):
     out_dir = os.path.dirname(out)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
@@ -111,8 +93,8 @@ def main(sensor_id: str, broker: str, port: int, qos: int, out: str, verbose: bo
         "status_updates": 0,
     }
     # Pass 'topics' explicitly in the lambda to handle arguments cleanly
-    client.on_connect = lambda client, userdata, flags, rc, properties=None: on_connect(client, userdata, flags, rc, [events_topic, status_topic])
-    client.on_message = lambda client, userdata, msg: on_message(client, userdata, msg, metrics, events_topic, out, verbose)
+    client.on_connect = lambda client, userdata, flags, rc, properties=None: on_connect(client, userdata, flags, rc, [topic, status_topic])
+    client.on_message = lambda client, userdata, msg: on_message(client, userdata, msg, metrics, topic, out, verbose)
 
     # Connecting to the MQTT broker.
     client.connect(broker, port, keepalive=60)

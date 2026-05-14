@@ -1,0 +1,185 @@
+asyncapi: 3.0.0
+info:
+  title: Smart Wastebin MQTT Interface
+  version: 1.0.0
+  description: |
+    Event-driven messaging interface for the Smart Wastebin system.
+    All communication goes through an MQTT broker (Mosquitto).    
+
+servers:
+  mosquitto:
+    host: localhost:1883
+    protocol: mqtt
+    description: Local Mosquitto broker on the Raspberry Pi
+
+channels:
+  motionEvents:
+    address: smartbin/{bin_id}/{sensor_id}/events
+    description: Full motion event records published by the producer
+    parameters:
+      bin_id:
+        description: Wastebin identifier (e.g., bin-01)
+      sensor_id:
+        description: Sensor identifier (e.g., pir-01)
+    messages:
+      motionEvent:
+        $ref: '#/components/messages/MotionEvent'
+
+  motionState:
+    address: smartbin/{bin_id}/{sensor_id}/motion
+    description: Simple motion state for Home Assistant (detected/clear)
+    parameters:
+      bin_id:
+        description: Wastebin identifier
+      sensor_id:
+        description: Sensor identifier
+    messages:
+      motionState:
+        $ref: '#/components/messages/MotionState'
+
+  binStatus:
+    address: smartbin/{bin_id}/status
+    description: Retained message with current bin status and metadata
+    parameters:
+      bin_id:
+        description: Wastebin identifier
+    messages:
+      binStatus:
+        $ref: '#/components/messages/BinStatus'
+
+  eventCount:
+    address: smartbin/{bin_id}/{sensor_id}/event_count
+    description: Running numeric counter of total motion events detected
+    parameters:
+      bin_id:
+        description: Wastebin identifier
+      sensor_id:
+        description: Sensor identifier
+    messages:
+      eventCount:
+        $ref: '#/components/messages/EventCount'
+
+operations:
+  publishMotionEvent:
+    action: send
+    channel:
+      $ref: '#/channels/motionEvents'
+    summary: Producer publishes a full motion event record
+    description: |
+      Published by the producer whenever the PIR sensor detects motion.
+      Contains the full observation record with timestamps, sensor reference,
+      and JSON-LD context.      
+
+  consumeMotionEvent:
+    action: receive
+    channel:
+      $ref: '#/channels/motionEvents'
+    summary: Consumer receives motion events and writes them to JSONL
+    description: |
+      The consumer subscribes to this channel, enriches each event with
+      ingest_time and pipeline_latency_ms, and writes the result to a
+      sensor-specific JSONL file.      
+
+  publishMotionState:
+    action: send
+    channel:
+      $ref: '#/channels/motionState'
+    summary: Producer publishes simple motion state for Home Assistant
+
+  publishBinStatus:
+    action: send
+    channel:
+      $ref: '#/channels/binStatus'
+    summary: Status update published as a retained message
+
+  publishEventCount:
+    action: send
+    channel:
+      $ref: '#/channels/eventCount'
+    summary: Producer publishes running event counter
+
+components:
+  messages:
+    MotionEvent:
+      name: MotionEvent
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          "@context":
+            type: string
+            description: JSON-LD context reference
+          "@type":
+            type: string
+            description: Observation type
+            example: sosa:Observation
+          device_id:
+            type: string
+            description: Identifier of the device (full URN)
+            example: "urn:dev:team05:pir-01"
+          sensor_ref:
+            type: string
+            description: URI of the sensor that produced this event
+            example: "urn:dev:team05:pir-01"
+          wastebin_ref:
+            type: string
+            description: URI of the wastebin this sensor is mounted on
+            example: "urn:wastebin:bin-01"
+          environment_ref:
+            type: string
+            description: URI of the deployment environment
+            example: "urn:env:kypes-02"
+          event_time:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of when the event occurred
+          event_type:
+            type: string
+            description: Type of event detected
+            example: motion
+          motion_state:
+            type: string
+            description: Motion state detected
+            enum: [detected, clear]
+          seq:
+            type: integer
+            description: Sequence number within this pipeline run
+          run_id:
+            type: string
+            description: UUID identifying this pipeline run
+
+    MotionState:
+      name: MotionState
+      contentType: text/plain
+      payload:
+        type: string
+        enum: [detected, clear]
+        description: Simple motion state string for Home Assistant
+
+    BinStatus:
+      name: BinStatus
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          state:
+            type: string
+            description: Current bin state
+            enum: [active, emptied, full, maintenance]
+          location:
+            type: string
+            description: Human-readable location
+          last_motion:
+            type: string
+            format: date-time
+            description: Timestamp of most recent motion event
+          total_events_today:
+            type: integer
+            description: Total number of motion events recorded today
+
+    EventCount:
+      name: EventCount
+      contentType: text/plain
+      payload:
+        type: string
+        description: String representation of an integer counting total events

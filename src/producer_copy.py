@@ -11,9 +11,7 @@ import paho.mqtt.client as mqtt
 from pirlib.sampler import PirSampler
 from pirlib.interpreter import PirInterpreter
 
-from apiFunc import find_sensor, find_bin
-
-# Constants for default values if not found
+# Constants for default values
 DEFAULT_SENSOR_ID      = "urn:dev:team05:pir-01"
 DEFAULT_WASTEBIN_ID    = "urn:wastebin:bin-01"
 DEFAULT_ENVIRONMENT_ID = "urn:env:kypes-02"
@@ -42,12 +40,12 @@ def handle_sigint(sig, frame):
     print("\n[Producer] Ctrl+C detected, terminating...")
     stop_flag = True
 
-def publish_discovery(client, bin_id, sensor_id):
+def publish_discovery(client, bin_id, sensor_id, motion_topic, status_topic, count_topic):
     print(f"[Producer] Publishing HA discovery messages for {sensor_id} on {bin_id}...")
     
     motion_config = {
         "name": f"PIR Motion Sensor {sensor_id}", 
-        "state_topic": f"smartbin/{bin_id}/{sensor_id}/motion", 
+        "state_topic": motion_topic, 
         "payload_on": "detected", 
         "payload_off": "clear", 
         "device_class": "motion", 
@@ -63,9 +61,9 @@ def publish_discovery(client, bin_id, sensor_id):
 
     status_config = { 
         "name": f"Wastebin {bin_id} Status", 
-        "state_topic": f"smartbin/{bin_id}/status", 
+        "state_topic": status_topic, 
         "value_template": "{{ value_json.state }}", 
-        "json_attributes_topic": f"smartbin/{bin_id}/status", 
+        "json_attributes_topic": status_topic, 
         "unique_id": f"{bin_id}_status", 
         "device": { 
             "identifiers": [bin_id], 
@@ -78,7 +76,7 @@ def publish_discovery(client, bin_id, sensor_id):
 
     count_config = { 
         "name": f"Motion Event Count {sensor_id}", 
-        "state_topic": f"smartbin/{bin_id}/{sensor_id}/event_count", 
+        "state_topic": count_topic, 
         "unit_of_measurement": "events", 
         "icon": "mdi:motion-sensor", 
         "unique_id": f"{bin_id}_{sensor_id}_motion_count", 
@@ -92,6 +90,12 @@ def publish_discovery(client, bin_id, sensor_id):
 
 @click.command()
 @click.option("--sensor-id", default=DEFAULT_SENSOR_ID, help="URN of the sensor")
+@click.option("--bin-id", default=DEFAULT_WASTEBIN_ID, help="URN of the wastebin")
+@click.option("--env-id", default=DEFAULT_ENVIRONMENT_ID, help="URN of the environment")
+@click.option("--topic", default="smartbin/bin-01/pir-01/events", help="MQTT topic for events")
+@click.option("--status-topic", default="smartbin/bin-01/status", help="MQTT topic for sensor status")
+@click.option("--motion-topic", default="smartbin/bin-01/pir-01/motion", help="MQTT topic for motion state")
+@click.option("--count-topic", default="smartbin/bin-01/pir-01/event_count", help="MQTT topic for event counts")
 @click.option("--pin", type=int, default=4, help="GPIO pin the PIR is connected to")
 @click.option("--sample-interval", type=float, default=0.1, help="Seconds between sensor samples")
 @click.option("--cooldown", type=float, default=2.0, help="Cooldown in seconds between motion events")
@@ -101,6 +105,12 @@ def publish_discovery(client, bin_id, sensor_id):
 @click.option("--verbose", is_flag=True, help="Print status messages to the terminal")
 def main(
     sensor_id: str,
+    bin_id: str,
+    env_id: str,
+    topic: str,
+    status_topic: str,
+    motion_topic: str,
+    count_topic: str,
     pin: int,
     sample_interval: float,
     cooldown: float,
@@ -112,24 +122,8 @@ def main(
     global stop_flag
     signal.signal(signal.SIGINT, handle_sigint)
 
-    # Load dynamic configuration
-    sensor_data = find_sensor(sensor_id)
-    if not sensor_data:
-        print(f"Error: Sensor {sensor_id} not found in models.")
-        return
-    
-    bin_urn = sensor_data.get("mounted_on", DEFAULT_WASTEBIN_ID)
-    bin_data = find_bin(bin_urn)
-    
     sensor_short_id = sensor_id.split(":")[-1]
-    bin_short_id = bin_urn.split(":")[-1]
-    
-    topic = f"smartbin/{bin_short_id}/{sensor_short_id}/events"
-    status_topic = f"smartbin/{bin_short_id}/status"
-    motion_topic = f"smartbin/{bin_short_id}/{sensor_short_id}/motion"
-    count_topic = f"smartbin/{bin_short_id}/{sensor_short_id}/event_count"
-    
-    environment_id = DEFAULT_ENVIRONMENT_ID # Could also be loaded from models
+    bin_short_id = bin_id.split(":")[-1]
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     
@@ -141,7 +135,7 @@ def main(
     
     client.loop_start()
 
-    publish_discovery(client, bin_short_id, sensor_short_id)
+    publish_discovery(client, bin_short_id, sensor_short_id, motion_topic, status_topic, count_topic)
 
     sampler = PirSampler(pin=pin)
     interp = PirInterpreter(cooldown_s=cooldown, min_high_s=min_high)
@@ -186,7 +180,7 @@ def main(
             client.publish(count_topic, str(event_count), retain=True)
             status_payload = {
                 "state": "active",
-                "location": bin_data.get("location", "Unknown") if bin_data else "Unknown",
+                "location": "Lab Room 101",
                 "last_motion": last_motion_iso,
                 "total_events_today": event_count
             }
@@ -198,8 +192,8 @@ def main(
 
                 "device_id":       sensor_id,
                 "sensor_ref":      sensor_id,
-                "wastebin_ref":    bin_urn,
-                "environment_ref": environment_id,
+                "wastebin_ref":    bin_id,
+                "environment_ref": env_id,
 
                 "event_time":      last_motion_iso,
                 "event_type":      "motion",
@@ -229,7 +223,7 @@ def main(
     
     end_status = {
         "state": "offline",
-        "location": bin_data.get("location", "Unknown") if bin_data else "Unknown",
+        "location": "Lab Room 101",
         "last_motion": last_motion_iso if last_motion_iso is not None else "none",
         "total_events_today": event_count
     }
