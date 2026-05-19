@@ -7,7 +7,7 @@ University of Patras · Department of Electrical and Computer Engineering · 8th
 [![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi-red?logo=raspberrypi&logoColor=white)](https://www.raspberrypi.com/)
 [![Sensor](https://img.shields.io/badge/Sensor-HC--SR501%20PIR-green)](https://www.google.com/search?q=HC-SR501+PIR+sensor)
 [![Course](https://img.shields.io/badge/Course-CK801--S26-orange)](https://gbouloukakis.com/courses/ck801-s26/projects/)
-
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff)](https://www.docker.com/)
 ---
 
 ## Overview
