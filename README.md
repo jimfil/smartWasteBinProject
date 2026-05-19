@@ -204,4 +204,8 @@ Build virtual sensors on top of your Smart Waste Bin pipeline. Implement a rule-
 - [Lab 04 — Portable Data Pipelines](https://gbouloukakis.com/courses/ck801-s26/labs/containers/)
 - [Lab 05 — Context-aware Data Modeling](https://gbouloukakis.com/courses/ck801-s26/labs/data_models/)
 - [Lab 06 — Publish/Subscribe Messaging](https://gbouloukakis.com/courses/ck801-s26/labs/pub_sub/)
+- [Lab 07 — Home Assistant Integration](https://gbouloukakis.com/courses/ck801-s26/labs/home_assistant/)
+- [Lab 08 — Building a REST API for the Smart Wastebin](https://gbouloukakis.com/courses/ck801-s26/labs/swagger/)
+- [Lab 09 — Data Processing on Edge Devices](https://gbouloukakis.com/courses/ck801-s26/labs/virtual_sensors/)
+- [Lab 10 — Node-RED LCDP](https://gbouloukakis.com/courses/ck801-s26/labs/node-red/)
 - [gpiozero Documentation](https://gpiozero.readthedocs.io/)
