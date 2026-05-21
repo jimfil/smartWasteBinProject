@@ -45,6 +45,39 @@
         "environment_ref": {
             "@id": "pipeline:environmentRef",
             "@type": "@id"
-        }
+        },
+        "fill_pct": {
+            "@id": "pipeline:fillPct",
+            "@type": "xsd:integer"
+        },
+        "fill_level": {
+            "@id": "pipeline:fillLevel",
+            "@type": "xsd:integer"
+        },
+        "weight_g": {
+            "@id": "pipeline:weightG",
+            "@type": "xsd:float"
+        },
+        "prediction": "pipeline:prediction",
+        "confidence": {
+            "@id": "pipeline:confidence",
+            "@type": "xsd:float"
+        },
+        "predicted_hour": {
+            "@id": "pipeline:predictedHour",
+            "@type": "xsd:integer"
+        },
+        "model_name": "pipeline:modelName",
+        "level": "pipeline:level",
+        "acknowledged": {
+            "@id": "pipeline:acknowledged",
+            "@type": "xsd:boolean"
+        },
+        "ack_at": {
+            "@id": "pipeline:ackTimestamp",
+            "@type": "xsd:dateTime"
+        },
+        "ack_by": "pipeline:ackBy",
+        "operator": "pipeline:ackBy"
     }
 }

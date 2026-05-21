@@ -265,17 +265,24 @@ class BinUsageIntensity(Resource):
     @ns_bins.response(404, "No usage intensity data found")
     @ns_bins.marshal_with(usage_intensity_model)
     def get(self, bin_id):
-        """Get the latest rule-based usage intensity evaluation for a bin"""
-        topic = f"smartbin/{bin_id}/usage_intensity"
+        """Get the latest rule-based usage intensity evaluation for a bin (Redirected to Node-RED)"""
+        nodered_topic = "smartbin/nodered/usage_intensity"
         with topic_lock:
-            if topic not in topic_store:
-                ns_bins.abort(404, f"No usage intensity data available for bin {bin_id}")
+            if nodered_topic not in topic_store:
+                ns_bins.abort(404, f"No usage intensity data available from Node-RED for bin {bin_id}")
             
             try:
-                payload = json.loads(topic_store[topic]["payload"])
-                return payload
+                nodered_payload = json.loads(topic_store[nodered_topic]["payload"])
+                # Map the Node-RED payload to the legacy UsageIntensity format for backward compatibility
+                mapped_payload = {
+                    "state": nodered_payload.get("level", "LOW").lower(),
+                    "count": nodered_payload.get("fill_pct", 0),  # Map fill percentage as dynamic metric
+                    "window_minutes": 5,  # Node-RED uses a 5-minute sliding window
+                    "timestamp": datetime.now(timezone.utc).timestamp()
+                }
+                return mapped_payload
             except json.JSONDecodeError:
-                ns_bins.abort(500, "Failed to parse usage intensity data")
+                ns_bins.abort(500, "Failed to parse Node-RED usage intensity data")
 
 
 @ns_bins.route("/<string:bin_id>/usage_prediction")
