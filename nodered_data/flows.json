@@ -924,7 +924,7 @@
         "type": "function",
         "z": "f00000000000000f",
         "name": "Uptime Counter",
-        "func": "let uptime = flow.get(\"uptime_seconds\") || 0;\nuptime++;\nflow.set(\"uptime_seconds\", uptime);\n\nlet sec = uptime % 60;\nlet min = Math.floor(uptime / 60) % 60;\nlet hrs = Math.floor(uptime / 3600) % 24;\nlet days = Math.floor(uptime / 86400);\n\nlet uptime_str = \"\";\if (days > 0) uptime_str += days + \"d \";\nuptime_str += (hrs < 10 ? \"0\" : \"\") + hrs + \":\" + (min < 10 ? \"0\" : \"\") + min + \":\" + (sec < 10 ? \"0\" : \"\") + sec;\n\nmsg.payload = uptime_str;\nreturn msg;",
+        "func": "let uptime = flow.get(\"uptime_seconds\") || 0;\nuptime++;\nflow.set(\"uptime_seconds\", uptime);\n\nlet sec = uptime % 60;\nlet min = Math.floor(uptime / 60) % 60;\nlet hrs = Math.floor(uptime / 3600) % 24;\nlet days = Math.floor(uptime / 86400);\n\nlet uptime_str = \"\";\nif (days > 0) uptime_str += days + \"d \";\nuptime_str += (hrs < 10 ? \"0\" : \"\") + hrs + \":\" + (min < 10 ? \"0\" : \"\") + min + \":\" + (sec < 10 ? \"0\" : \"\") + sec;\n\nmsg.payload = uptime_str;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
