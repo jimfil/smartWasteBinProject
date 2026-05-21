@@ -153,3 +153,32 @@ def get_sensor_for_bin(bin_id):
     if sensors:
         return sensors[0]["id"]
     return None
+
+
+def load_nodered_alerts(filepath=None, limit=None):
+    """Loads and returns alert records from nodered_alerts.log."""
+    if filepath is None:
+        filepath = os.path.join(DATA_DIR, "nodered_alerts.log")
+        
+    alerts = []
+    if not os.path.exists(filepath):
+        return alerts
+        
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+                alerts.append(record)
+            except json.JSONDecodeError:
+                continue
+                
+    # Sort chronologically, newest first
+    alerts.reverse()
+    
+    if limit is not None:
+        alerts = alerts[:limit]
+        
+    return alerts

@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_restx import Api, Resource, fields, reqparse
-from apiFunc import load_events, EVENTS_FILE, find_sensor, get_sensor_for_bin, find_bin, load_bins, load_sensors, get_sensors_for_bin
+from apiFunc import load_events, EVENTS_FILE, find_sensor, get_sensor_for_bin, find_bin, load_bins, load_sensors, get_sensors_for_bin, load_nodered_alerts
 import json
 import paho.mqtt.client as mqtt
 import threading
@@ -58,6 +58,7 @@ ns_bins = api.namespace("bins", description="Wastebin operations")
 ns_sensors = api.namespace("sensors", description="Sensor operations")
 ns_mqtt = api.namespace("mqtt", description="MQTT broker interaction")
 ns_events = api.namespace("events", description="Motion events from pipeline")
+ns_nodered = api.namespace("nodered", path="/api/nodered", description="Node-RED integration operations")
 
 bin_model = api.model("Bin", {
     "id": fields.String(required=True, description="Bin unique identifier"),
@@ -122,6 +123,25 @@ usage_prediction_model = api.model("UsagePrediction", {
     "utc_prediction_timestamp": fields.Float(description="Unix timestamp when prediction was made"),
     "model_name": fields.String(description="Name of the model used"),
     "features_used": fields.Raw(description="Features used for the prediction")
+})
+
+nodered_status_model = api.model("NodeRedStatus", {
+    "status": fields.String(description="Node-RED runtime live status (online/offline)"),
+    "last_heartbeat": fields.String(description="ISO timestamp of last heartbeat or 'None'"),
+    "timestamp": fields.String(description="Current evaluation ISO timestamp")
+})
+
+nodered_intensity_model = api.model("NodeRedIntensity", {
+    "level": fields.String(description="Usage intensity level (LOW/MEDIUM/HIGH/CRITICAL)"),
+    "fill_pct": fields.Integer(description="Fill percentage"),
+    "timestamp": fields.String(description="Timestamp of rule evaluation")
+})
+
+nodered_alert_model = api.model("NodeRedAlert", {
+    "topic": fields.String(description="Topic where alert was published"),
+    "alert": fields.Raw(description="Raw alert payload detail"),
+    "timestamp": fields.String(description="ISO timestamp when alert was logged"),
+    "acknowledged": fields.Boolean(description="Whether the alert was acknowledged")
 })
 
 events_parser = reqparse.RequestParser()
@@ -370,6 +390,67 @@ class EventList(Resource):
             end_time=args.get("end")
         )
         return events
+
+
+@ns_nodered.route("/status")
+class NodeRedStatus(Resource):
+    @ns_nodered.marshal_with(nodered_status_model)
+    def get(self):
+        """Check whether Node-RED is live based on last heartbeat timestamp"""
+        heartbeat_topic = "smartbin/nodered/heartbeat"
+        status = "offline"
+        last_heartbeat = "None"
+        
+        with topic_lock:
+            if heartbeat_topic in topic_store:
+                msg_info = topic_store[heartbeat_topic]
+                last_heartbeat = msg_info["timestamp"]
+                
+                # Parse the last heartbeat time
+                try:
+                    hb_time = datetime.fromisoformat(last_heartbeat.replace("Z", "+00:00"))
+                    now_time = datetime.now(timezone.utc)
+                    diff_seconds = (now_time - hb_time).total_seconds()
+                    # Heartbeat is published every 30 seconds, give it a 45 second grace window
+                    if diff_seconds <= 45.0:
+                        status = "online"
+                except Exception as e:
+                    print(f"Error parsing heartbeat timestamp: {e}")
+                    
+        return {
+            "status": status,
+            "last_heartbeat": last_heartbeat,
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        }, 200
+
+
+@ns_nodered.route("/usage-intensity")
+class NodeRedUsageIntensity(Resource):
+    @ns_nodered.response(404, "No Node-RED usage intensity data found")
+    def get(self):
+        """Get the latest rule-based usage intensity from Node-RED"""
+        topic = "smartbin/nodered/usage_intensity"
+        with topic_lock:
+            if topic not in topic_store:
+                ns_nodered.abort(404, f"No usage intensity data available on topic '{topic}'")
+            
+            try:
+                payload = json.loads(topic_store[topic]["payload"])
+                return payload, 200
+            except json.JSONDecodeError:
+                ns_nodered.abort(500, "Failed to parse Node-RED usage intensity data")
+
+
+@ns_nodered.route("/alerts")
+class NodeRedAlertList(Resource):
+    @ns_nodered.expect(events_parser)
+    @ns_nodered.marshal_list_with(nodered_alert_model)
+    def get(self):
+        """Get recent alert logs forwarded by Node-RED"""
+        args = events_parser.parse_args()
+        limit = args.get("limit", 50)
+        alerts = load_nodered_alerts(limit=limit)
+        return alerts, 200
 
 
 if __name__ == "__main__":

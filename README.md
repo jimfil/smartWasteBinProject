@@ -195,6 +195,68 @@ Build virtual sensors on top of your Smart Waste Bin pipeline. Implement a rule-
 
 **Status: Completed**
 
+---
+
+### Milestone 10 — Lab 10: Node-RED Low-Code Platform (LCDP)
+
+Integrate Node-RED as a low-code orchestration, plumbing, and operator dashboard layer that runs in parallel with the Python processing pipeline. Replicate rule-based usage levels with sliding windows, deploy a real-time alerting engine with notification and webhook integrations, set up a wild-card data log router with REST-exposed circular buffers, parse machine learning predictions into rich visual HTML cards, and build a unified dark-mode Operator Summary Dashboard.
+
+**Status: Completed**
+
+---
+
+## Node-RED Integration
+
+Node-RED serves as our low-code orchestration and plumbing layer. It does *not* replace the core Python pipeline (e.g. ML inference and low-latency digital signal filtering), but rather sits alongside it to handle plumbing, event routing, real-time alerting, and operation management.
+
+### Accessing Node-RED
+Once the Docker containers are running:
+* **Node-RED Editor**: `http://localhost:1880`
+* **Operator Dashboard**: `http://localhost:1880/dashboard`
+
+### Implemented Node-RED Flows
+
+1. **Flow A: "Raw Sensor Monitor" (Observer)**
+   * Subscribes in parallel to raw telemetry (`smartbin/sensor/fill_level`, `smartbin/sensor/weight`, `smartbin/sensor/motion`).
+   * Enriches messages with a high-resolution timestamp.
+   * Feeds the live gauges and indicators in the Live Sensors Dashboard.
+
+2. **Flow B: "Usage Intensity Replication" (Validation Layer)**
+   * Subscribes to `smartbin/sensor/fill_level` and `smartbin/sensor/weight`.
+   * Manages a **5-minute sliding event window** using Node-RED flow context.
+   * Implements a redundant rule validation logic:
+     * Fill < 25%: `LOW`
+     * 25% – 50%: `MEDIUM`
+     * 50% – 75%: `HIGH`
+     * \> 75%: `CRITICAL`
+   * Publishes structured JSON to `smartbin/nodered/usage_intensity`.
+
+3. **Flow C: "Alert Engine" (Decision Support)**
+   * Listens to the replicated intensity output on `smartbin/nodered/usage_intensity`.
+   * If `CRITICAL`, routes to an **Alert Flow**: publishes to `smartbin/alerts/critical`, triggers a high-priority dashboard popup, and invokes a Slack webhook placeholder (`GET /webhook/slack-placeholder`).
+   * If `HIGH`, routes to a **Warning Flow**: publishes to `smartbin/alerts/warning` and logs details to debug console.
+   * Otherwise, ignores (no-op).
+
+4. **Flow D: "Data Router & Archiver" (Routing Layer)**
+   * Subscribes to all `smartbin/#` events using a wildcard topic.
+   * Routes logs into specific debug topics: `virtual_log`, `sensor_log`, and `alert_log`.
+   * Appends events into an in-memory **circular buffer (last 100 events per category)**.
+   * Exposes a Node-RED native REST endpoint at `GET http://localhost:1880/nodered/api/recent-events` returning the JSON buffer.
+
+5. **Flow E: "ML Prediction Listener & Dashboard Card" (Aesthetics & Card Renders)**
+   * Listens to machine learning predictions on `smartbin/+/usage_prediction`.
+   * Parsed data is rendered in a custom styled, dark-mode HTML card showcasing prediction label, confidence level (with dynamic color indicators), and metadata.
+   * Publishes processed values to `smartbin/nodered/ml_display`.
+
+6. **Flow F: "Operator Summary Dashboard" (User Interface)**
+   * Formatted using **Node-RED Dashboard 2.0 (`@flowfuse/node-red-dashboard`)** in Catppuccin dark styling.
+   * **Live Sensors**: Live gauges for fill level and weight, motion LED indicator.
+   * **Virtual Sensors**: Color-coded usage level display (green/yellow/orange/red), ML card badge.
+   * **Alerts**: Real-time alert log (last 10 alerts), active alert counter.
+   * **System**: Node-RED 30s heartbeat injector (`smartbin/nodered/heartbeat`), uptime counter (DD:HH:MM:SS), last-seen MQTT tracker per topic.
+
+---
+
 ## Resources
 
 - [Course Project Page](https://gbouloukakis.com/courses/ck801-s26/projects/)
