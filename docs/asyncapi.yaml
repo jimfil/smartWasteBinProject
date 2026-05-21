@@ -59,6 +59,16 @@ channels:
       eventCount:
         $ref: '#/components/messages/EventCount'
 
+  usageIntensity:
+    address: smartbin/{bin_id}/usage_intensity
+    description: Rule-based usage intensity evaluated over a time window
+    parameters:
+      bin_id:
+        description: Wastebin identifier
+    messages:
+      usageIntensity:
+        $ref: '#/components/messages/UsageIntensity'
+
   usagePrediction:
     address: smartbin/{bin_id}/usage_prediction
     description: ML-based prediction of busy/quiet periods for the next hour
@@ -191,6 +201,12 @@ operations:
     channel:
       $ref: '#/channels/eventCount'
     summary: Producer publishes running event counter
+
+  publishUsageIntensity:
+    action: send
+    channel:
+      $ref: '#/channels/usageIntensity'
+    summary: Virtual sensor publishes evaluated usage intensity
 
   publishUsagePrediction:
     action: send
@@ -355,6 +371,26 @@ components:
       payload:
         type: string
         description: String representation of an integer counting total events
+
+    UsageIntensity:
+      name: UsageIntensity
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          state:
+            type: string
+            enum: [idle, low, medium, high]
+            description: Usage state
+          count:
+            type: integer
+            description: Number of events in the window
+          window_minutes:
+            type: integer
+            description: Evaluation window size in minutes
+          timestamp:
+            type: number
+            description: Unix timestamp of the evaluation
 
     UsagePrediction:
       name: UsagePrediction
