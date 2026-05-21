@@ -1,41 +1,41 @@
 [
   {
-    "id": "f00000000000000a",
+    "id": "e24d10744ee8694c",
     "type": "tab",
     "label": "Flow A: Raw Sensor Monitor",
     "disabled": false,
     "info": "Subscribes to raw fill level, weight, and motion sensors, attaches timestamps, and forwards to debug and live dashboard gauges."
   },
   {
-    "id": "f00000000000000b",
+    "id": "54dcf69a3ae9b875",
     "type": "tab",
     "label": "Flow B: Usage Intensity Replication",
     "disabled": false,
     "info": "Replicates rule-based usage intensity level using fill updates only, while caching latest weight. Publishes structured JSON and updates dashboard cleanly."
   },
   {
-    "id": "f00000000000000c",
+    "id": "2a0efe051790fb49",
     "type": "tab",
     "label": "Flow C: Alert Engine",
     "disabled": false,
     "info": "Routes warning levels and deduplicates HIGH/CRITICAL alerts so one state transition creates one alert."
   },
   {
-    "id": "f00000000000000d",
+    "id": "c2309bf37c573735",
     "type": "tab",
     "label": "Flow D: Data Router & Archiver",
     "disabled": false,
     "info": "Filters and logs all smartbin topics. Appends to a 100-event circular buffer and exposes it over GET /nodered/api/recent-events."
   },
   {
-    "id": "f00000000000000e",
+    "id": "d631b67f2112f182",
     "type": "tab",
     "label": "Flow E: ML Prediction Listener",
     "disabled": false,
     "info": "Listens to ML prediction, renders HTML badge cards, and pushes to Dashboard cards and smartbin/nodered/ml_display."
   },
   {
-    "id": "f00000000000000f",
+    "id": "69d6bc9e21260366",
     "type": "tab",
     "label": "Flow F: Operator Dashboard & System Services",
     "disabled": false,
@@ -77,6 +77,14 @@
       "ui-notification",
       "ui-control"
     ]
+  },
+  {
+    "id": "e47ff8625f08df6e",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@flowfuse/node-red-dashboard": "1.30.2"
+    }
   },
   {
     "id": "ui_theme_id",
@@ -128,7 +136,9 @@
         "cols": 12
       }
     ],
-    "order": 1
+    "order": 1,
+    "visible": true,
+    "disabled": false
   },
   {
     "id": "group_live_sensors",
@@ -139,6 +149,9 @@
     "height": "1",
     "order": 1,
     "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
     "groupType": "default"
   },
   {
@@ -150,6 +163,9 @@
     "height": "1",
     "order": 2,
     "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
     "groupType": "default"
   },
   {
@@ -161,6 +177,9 @@
     "height": "1",
     "order": 3,
     "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
     "groupType": "default"
   },
   {
@@ -172,12 +191,15 @@
     "height": "1",
     "order": 4,
     "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
     "groupType": "default"
   },
   {
-    "id": "mqtt_in_fill",
+    "id": "037025590b653e77",
     "type": "mqtt in",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Fill Level Sub",
     "topic": "smartbin/sensor/fill_level",
     "qos": "1",
@@ -190,15 +212,15 @@
     "y": 120,
     "wires": [
       [
-        "func_attach_ts",
-        "widget_gauge_fill"
+        "1fbfeef1490ad7a7",
+        "c69cff5c662522c5"
       ]
     ]
   },
   {
-    "id": "mqtt_in_weight",
+    "id": "add4f7fbc800091c",
     "type": "mqtt in",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Weight Sub",
     "topic": "smartbin/sensor/weight",
     "qos": "1",
@@ -211,15 +233,15 @@
     "y": 200,
     "wires": [
       [
-        "func_attach_ts",
-        "widget_gauge_weight"
+        "1fbfeef1490ad7a7",
+        "9431626992a5d63c"
       ]
     ]
   },
   {
-    "id": "mqtt_in_motion",
+    "id": "ce829cd3a5783064",
     "type": "mqtt in",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Motion Sub",
     "topic": "smartbin/sensor/motion",
     "qos": "1",
@@ -232,15 +254,15 @@
     "y": 280,
     "wires": [
       [
-        "func_attach_ts",
-        "func_motion_text"
+        "1fbfeef1490ad7a7",
+        "7f7abe71b7f9cacc"
       ]
     ]
   },
   {
-    "id": "func_attach_ts",
+    "id": "1fbfeef1490ad7a7",
     "type": "function",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Attach Timestamp",
     "func": "msg.timestamp = new Date().toISOString();\nreturn msg;",
     "outputs": 1,
@@ -253,14 +275,14 @@
     "y": 200,
     "wires": [
       [
-        "debug_sensor_mon"
+        "6f63878a1694ae63"
       ]
     ]
   },
   {
-    "id": "func_motion_text",
+    "id": "7f7abe71b7f9cacc",
     "type": "function",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Format Motion",
     "func": "let v = msg.payload;\nif (v === 1 || v === '1' || v === true || v === 'true') { msg.payload = 'DETECTED'; }\nelse { msg.payload = 'IDLE'; }\nreturn msg;",
     "outputs": 1,
@@ -273,14 +295,14 @@
     "y": 300,
     "wires": [
       [
-        "widget_text_motion"
+        "8a6688e607780a55"
       ]
     ]
   },
   {
-    "id": "debug_sensor_mon",
+    "id": "6f63878a1694ae63",
     "type": "debug",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Sensor Debug Log",
     "active": true,
     "tosidebar": true,
@@ -295,9 +317,9 @@
     "wires": []
   },
   {
-    "id": "widget_gauge_fill",
+    "id": "c69cff5c662522c5",
     "type": "ui-gauge",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Fill Level Gauge",
     "group": "group_live_sensors",
     "order": 1,
@@ -335,9 +357,9 @@
     ],
     "min": 0,
     "max": 100,
-    "sizeThickness": "",
-    "sizeGap": "",
-    "sizeKeyThickness": "",
+    "sizeThickness": "16",
+    "sizeGap": "4",
+    "sizeKeyThickness": "8",
     "className": "",
     "x": 390,
     "y": 80,
@@ -346,9 +368,9 @@
     ]
   },
   {
-    "id": "widget_gauge_weight",
+    "id": "9431626992a5d63c",
     "type": "ui-gauge",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "name": "Weight Gauge",
     "group": "group_live_sensors",
     "order": 2,
@@ -386,9 +408,9 @@
     ],
     "min": 0,
     "max": 5000,
-    "sizeThickness": "",
-    "sizeGap": "",
-    "sizeKeyThickness": "",
+    "sizeThickness": "16",
+    "sizeGap": "4",
+    "sizeKeyThickness": "8",
     "className": "",
     "x": 380,
     "y": 140,
@@ -397,9 +419,9 @@
     ]
   },
   {
-    "id": "widget_text_motion",
+    "id": "8a6688e607780a55",
     "type": "ui-text",
-    "z": "f00000000000000a",
+    "z": "e24d10744ee8694c",
     "group": "group_live_sensors",
     "order": 3,
     "width": "",
@@ -421,9 +443,9 @@
     "wires": []
   },
   {
-    "id": "mqtt_in_b_fill",
+    "id": "0d23cd29d21463c1",
     "type": "mqtt in",
-    "z": "f00000000000000b",
+    "z": "54dcf69a3ae9b875",
     "name": "Fill Sub (B)",
     "topic": "smartbin/sensor/fill_level",
     "qos": "1",
@@ -436,14 +458,14 @@
     "y": 140,
     "wires": [
       [
-        "func_replicate_intensity"
+        "d8e40b9b9bece6fb"
       ]
     ]
   },
   {
-    "id": "mqtt_in_b_weight",
+    "id": "017ae95b6c3abd90",
     "type": "mqtt in",
-    "z": "f00000000000000b",
+    "z": "54dcf69a3ae9b875",
     "name": "Weight Sub (B)",
     "topic": "smartbin/sensor/weight",
     "qos": "1",
@@ -456,14 +478,14 @@
     "y": 220,
     "wires": [
       [
-        "func_replicate_intensity"
+        "d8e40b9b9bece6fb"
       ]
     ]
   },
   {
-    "id": "func_replicate_intensity",
+    "id": "d8e40b9b9bece6fb",
     "type": "function",
-    "z": "f00000000000000b",
+    "z": "54dcf69a3ae9b875",
     "name": "Usage Intensity Rules",
     "func": "let fill_level = flow.get('fill_level') || 0;\nlet weight = flow.get('weight') || 0;\nlet now = Date.now();\n\nif (msg.topic === 'smartbin/sensor/weight') {\n    weight = parseFloat(msg.payload);\n    if (isNaN(weight)) weight = 0;\n    flow.set('weight', weight);\n    return null;\n}\n\nif (msg.topic !== 'smartbin/sensor/fill_level') {\n    return null;\n}\n\nfill_level = parseFloat(msg.payload);\nif (isNaN(fill_level)) fill_level = 0;\nflow.set('fill_level', fill_level);\n\nlet level = 'LOW';\nif (fill_level < 25) {\n    level = 'LOW';\n} else if (fill_level < 50) {\n    level = 'MEDIUM';\n} else if (fill_level <= 75) {\n    level = 'HIGH';\n} else {\n    level = 'CRITICAL';\n}\n\nmsg.payload = {\n    level: level,\n    fill_pct: fill_level,\n    weight_g: weight,\n    timestamp: new Date(now).toISOString()\n};\n\nreturn msg;",
     "outputs": 1,
@@ -476,15 +498,15 @@
     "y": 180,
     "wires": [
       [
-        "widget_text_usage",
-        "json_stringify_b"
+        "68c7625ed53ea53f",
+        "6f2fd3b8eacacc20"
       ]
     ]
   },
   {
-    "id": "json_stringify_b",
+    "id": "6f2fd3b8eacacc20",
     "type": "json",
-    "z": "f00000000000000b",
+    "z": "54dcf69a3ae9b875",
     "name": "Stringify JSON",
     "property": "payload",
     "action": "str",
@@ -493,14 +515,14 @@
     "y": 220,
     "wires": [
       [
-        "mqtt_out_b_intensity"
+        "fe90c0d8b889c18c"
       ]
     ]
   },
   {
-    "id": "mqtt_out_b_intensity",
+    "id": "fe90c0d8b889c18c",
     "type": "mqtt out",
-    "z": "f00000000000000b",
+    "z": "54dcf69a3ae9b875",
     "name": "Publish Intensity",
     "topic": "smartbin/nodered/usage_intensity",
     "qos": "1",
@@ -516,9 +538,9 @@
     "wires": []
   },
   {
-    "id": "widget_text_usage",
+    "id": "68c7625ed53ea53f",
     "type": "ui-text",
-    "z": "f00000000000000b",
+    "z": "54dcf69a3ae9b875",
     "group": "group_virtual_sensors",
     "order": 1,
     "width": "",
@@ -540,9 +562,9 @@
     "wires": []
   },
   {
-    "id": "mqtt_in_c_intensity",
+    "id": "8a08643053c9f57a",
     "type": "mqtt in",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Intensity Subscriber",
     "topic": "smartbin/nodered/usage_intensity",
     "qos": "1",
@@ -555,14 +577,14 @@
     "y": 180,
     "wires": [
       [
-        "json_parse_c"
+        "4502544c26e9ea13"
       ]
     ]
   },
   {
-    "id": "json_parse_c",
+    "id": "4502544c26e9ea13",
     "type": "json",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Parse JSON",
     "property": "payload",
     "action": "obj",
@@ -571,16 +593,16 @@
     "y": 180,
     "wires": [
       [
-        "func_dedup_alerts"
+        "94d978749d9f1a82"
       ]
     ]
   },
   {
-    "id": "func_dedup_alerts",
+    "id": "94d978749d9f1a82",
     "type": "function",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Deduplicate Alerts",
-    "func": "let currentLevel = msg.payload.level;\nlet lastAlertLevel = flow.get('last_alert_level') || '';\n\nif (currentLevel === 'HIGH' || currentLevel === 'CRITICAL') {\n    if (lastAlertLevel === currentLevel) {\n        return null;\n    }\n    flow.set('last_alert_level', currentLevel);\n    return msg;\n}\n\nflow.set('last_alert_level', currentLevel);\nreturn null;",
+    "func": "let p = msg.payload;\n\nif (typeof p === \"string\") {\n    try { p = JSON.parse(p); } catch (e) { return null; }\n}\n\nif (!p || typeof p !== \"object\") return null;\n\nlet currentLevel = (p.level || \"\").toUpperCase();\nlet ts = p.timestamp || new Date().toISOString();\n\nif (currentLevel !== \"HIGH\" && currentLevel !== \"CRITICAL\") {\n    return null;\n}\n\nlet now = Date.now();\nlet last = flow.get(\"last_alert_time_by_level\") || {};\nlet cooldownMs = 15000; // 15 sec, change if you want\n\nif (last[currentLevel] && (now - last[currentLevel]) < cooldownMs) {\n    return null;\n}\n\nlast[currentLevel] = now;\nflow.set(\"last_alert_time_by_level\", last);\n\nmsg.payload = {\n    bin_id: p.bin_id || \"bin-01\",\n    level: currentLevel,\n    fill_pct: Number(p.fill_pct ?? p.fill_level ?? 0),\n    weight_g: Number(p.weight_g ?? p.weight ?? 0),\n    timestamp: ts\n};\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -591,14 +613,14 @@
     "y": 180,
     "wires": [
       [
-        "switch_intensity_level"
+        "65074a483a3c3dce"
       ]
     ]
   },
   {
-    "id": "switch_intensity_level",
+    "id": "65074a483a3c3dce",
     "type": "switch",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Branch Level",
     "property": "payload.level",
     "propertyType": "msg",
@@ -621,19 +643,19 @@
     "y": 180,
     "wires": [
       [
-        "func_format_critical"
+        "bb94856a6fcf114e"
       ],
       [
-        "func_format_warning"
+        "63b24a29e799f476"
       ]
     ]
   },
   {
-    "id": "func_format_critical",
+    "id": "bb94856a6fcf114e",
     "type": "function",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Format Critical",
-    "func": "msg.payload = {\n  bin_id: 'bin-01',\n  level: 'CRITICAL',\n  timestamp: msg.payload.timestamp,\n  message: 'ALERT: Wastebin bin-01 requires immediate emptying! Fill Level is at ' + msg.payload.fill_pct + '%.',\n  fill_pct: msg.payload.fill_pct\n};\nreturn msg;",
+    "func": "let p = msg.payload;\n\nmsg.payload = {\n  bin_id: p.bin_id || \"bin-01\",\n  level: \"CRITICAL\",\n  fill_pct: Number(p.fill_pct ?? 0),\n  weight_g: Number(p.weight_g ?? 0),\n  timestamp: p.timestamp || new Date().toISOString(),\n  message: `CRITICAL - Bin ${p.bin_id || \"bin-01\"} is ${Number(p.fill_pct ?? 0)}% full. Empty immediately.`\n};\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -644,18 +666,18 @@
     "y": 120,
     "wires": [
       [
-        "json_stringify_crit",
-        "widget_crit_notification",
-        "webhook_slack_placeholder"
+        "1f3125f7c2500a68",
+        "0efcf0f1c772f8ff",
+        "fb9f4eea6ad71650"
       ]
     ]
   },
   {
-    "id": "func_format_warning",
+    "id": "63b24a29e799f476",
     "type": "function",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Format Warning",
-    "func": "msg.payload = {\n  bin_id: 'bin-01',\n  level: 'HIGH',\n  timestamp: msg.payload.timestamp,\n  message: 'WARNING: Wastebin bin-01 fill level is high (' + msg.payload.fill_pct + '%).',\n  fill_pct: msg.payload.fill_pct\n};\nreturn msg;",
+    "func": "let p = msg.payload;\n\nmsg.payload = {\n    bin_id: p.bin_id || \"bin-01\",\n    level: \"HIGH\",\n    fill_pct: Number(p.fill_pct ?? 0),\n    weight_g: Number(p.weight_g ?? 0),\n    timestamp: p.timestamp || new Date().toISOString(),\n    message: `WARNING - Bin ${p.bin_id || \"bin-01\"} is ${Number(p.fill_pct ?? 0)}% full. Schedule collection soon.`\n};\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -666,15 +688,15 @@
     "y": 240,
     "wires": [
       [
-        "json_stringify_warn",
-        "debug_warning_log"
+        "b9ed8c87765b357e",
+        "a65fcc374b0e4de3"
       ]
     ]
   },
   {
-    "id": "json_stringify_crit",
+    "id": "1f3125f7c2500a68",
     "type": "json",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Stringify Alert",
     "property": "payload",
     "action": "str",
@@ -683,14 +705,14 @@
     "y": 80,
     "wires": [
       [
-        "mqtt_out_crit_alert"
+        "531b2dee886d041a"
       ]
     ]
   },
   {
-    "id": "mqtt_out_crit_alert",
+    "id": "531b2dee886d041a",
     "type": "mqtt out",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Pub Critical Alert",
     "topic": "smartbin/alerts/critical",
     "qos": "1",
@@ -706,9 +728,9 @@
     "wires": []
   },
   {
-    "id": "json_stringify_warn",
+    "id": "b9ed8c87765b357e",
     "type": "json",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Stringify Warning",
     "property": "payload",
     "action": "str",
@@ -717,14 +739,14 @@
     "y": 280,
     "wires": [
       [
-        "mqtt_out_warn_alert"
+        "9d819bf369a08e16"
       ]
     ]
   },
   {
-    "id": "mqtt_out_warn_alert",
+    "id": "9d819bf369a08e16",
     "type": "mqtt out",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Pub Warning Alert",
     "topic": "smartbin/alerts/warning",
     "qos": "1",
@@ -740,31 +762,9 @@
     "wires": []
   },
   {
-    "id": "webhook_slack_placeholder",
-    "type": "http request",
-    "z": "f00000000000000c",
-    "name": "Slack Webhook (Placeholder)",
-    "method": "POST",
-    "ret": "txt",
-    "paytoqs": "ignore",
-    "url": "http://localhost:8000/webhook/slack-placeholder",
-    "tls": "",
-    "persist": false,
-    "proxy": "",
-    "insecureHTTPParser": false,
-    "authType": "",
-    "senderr": false,
-    "headers": [],
-    "x": 1160,
-    "y": 160,
-    "wires": [
-      []
-    ]
-  },
-  {
-    "id": "widget_crit_notification",
+    "id": "0efcf0f1c772f8ff",
     "type": "ui-notification",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "ui": "ui_base_id",
     "position": "top right",
     "colorDefault": false,
@@ -786,9 +786,9 @@
     ]
   },
   {
-    "id": "debug_warning_log",
+    "id": "a65fcc374b0e4de3",
     "type": "debug",
-    "z": "f00000000000000c",
+    "z": "2a0efe051790fb49",
     "name": "Warning Log",
     "active": true,
     "tosidebar": true,
@@ -803,9 +803,31 @@
     "wires": []
   },
   {
-    "id": "mqtt_in_wildcard",
+    "id": "fb9f4eea6ad71650",
+    "type": "http request",
+    "z": "2a0efe051790fb49",
+    "name": "Slack Webhook (Placeholder)",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "http://localhost:8000/webhook/slack-placeholder",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 1160,
+    "y": 160,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "42bf65b084bd6e9c",
     "type": "mqtt in",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Wildcard Subscriber",
     "topic": "smartbin/#",
     "qos": "1",
@@ -818,15 +840,15 @@
     "y": 200,
     "wires": [
       [
-        "switch_router",
-        "func_circular_buffer"
+        "1fe4bb7a05ce64ef",
+        "62efd5b4dc5fba35"
       ]
     ]
   },
   {
-    "id": "switch_router",
+    "id": "1fe4bb7a05ce64ef",
     "type": "switch",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Route by Topic",
     "property": "topic",
     "propertyType": "msg",
@@ -857,21 +879,21 @@
     "y": 140,
     "wires": [
       [
-        "mqtt_out_virtual_log"
+        "c234e1cade5e9b70"
       ],
       [
-        "mqtt_out_sensor_log"
+        "3191e66af636de64"
       ],
       [
-        "mqtt_out_alert_log",
-        "func_trigger_alert_counter"
+        "679588381b72a694",
+        "a310f158e59f6096"
       ]
     ]
   },
   {
-    "id": "mqtt_out_virtual_log",
+    "id": "c234e1cade5e9b70",
     "type": "mqtt out",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Virtual Log Pub",
     "topic": "smartbin/nodered/virtual_log",
     "qos": "1",
@@ -887,9 +909,9 @@
     "wires": []
   },
   {
-    "id": "mqtt_out_sensor_log",
+    "id": "3191e66af636de64",
     "type": "mqtt out",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Sensor Log Pub",
     "topic": "smartbin/nodered/sensor_log",
     "qos": "1",
@@ -905,9 +927,9 @@
     "wires": []
   },
   {
-    "id": "mqtt_out_alert_log",
+    "id": "679588381b72a694",
     "type": "mqtt out",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Alert Log Pub",
     "topic": "smartbin/nodered/alert_log",
     "qos": "1",
@@ -923,9 +945,9 @@
     "wires": []
   },
   {
-    "id": "func_trigger_alert_counter",
+    "id": "a310f158e59f6096",
     "type": "function",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Increment Alert Counter",
     "func": "let count = flow.get('alert_count') || 0;\ncount++;\nflow.set('alert_count', count);\nmsg.payload = count;\nreturn msg;",
     "outputs": 1,
@@ -938,16 +960,16 @@
     "y": 260,
     "wires": [
       [
-        "widget_text_alert_count"
+        "f962d7c0d1421dfb"
       ]
     ]
   },
   {
-    "id": "func_circular_buffer",
+    "id": "62efd5b4dc5fba35",
     "type": "function",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Circular Event Buffer",
-    "func": "let topic = msg.topic || '';\nif (topic.startsWith('smartbin/nodered/')) { return null; }\nlet buffer = flow.get('event_buffer') || { virtual: [], sensor: [], alerts: [] };\nlet category = 'sensor';\nif (topic.includes('virtual')) category = 'virtual';\nelse if (topic.includes('alerts')) category = 'alerts';\nlet record = { topic: topic, payload: msg.payload, timestamp: new Date().toISOString() };\nbuffer[category].push(record);\nif (buffer[category].length > 100) buffer[category].shift();\nflow.set('event_buffer', buffer);\nif (category === 'alerts') {\n  let listStr = '';\n  for (let i = buffer.alerts.length - 1; i >= Math.max(0, buffer.alerts.length - 10); i--) {\n    let item = buffer.alerts[i];\n    let parsed = item.payload;\n    if (typeof parsed === 'string') { try { parsed = JSON.parse(parsed); } catch(e) {} }\n    let msgText = typeof parsed === 'object' ? (parsed.message || JSON.stringify(parsed)) : parsed;\n    listStr += '* **' + new Date(item.timestamp).toLocaleTimeString() + '**: ' + msgText + '\\n';\n  }\n  node.send([null, { payload: listStr || '*No alerts logged yet*' }]);\n}\nreturn null;",
+    "func": "let topic = msg.topic || '';\nif (topic.startsWith('smartbin/nodered/')) { \n    return null; \n}\n\nlet buffer = flow.get('event_buffer') || { virtual: [], sensor: [], alerts: [] };\n\nlet category = 'sensor';\nif (topic.includes('virtual')) category = 'virtual';\nelse if (topic.includes('alerts')) category = 'alerts';\n\nlet record = {\n    topic: topic,\n    payload: msg.payload,\n    timestamp: new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) buffer[category].shift();\n\nflow.set('event_buffer', buffer);\n\nif (category === 'alerts') {\n    let lines = [];\n    let start = Math.max(0, buffer.alerts.length - 10);\n\n    for (let i = buffer.alerts.length - 1; i >= start; i--) {\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n\n        if (typeof parsed === 'string') {\n            try { parsed = JSON.parse(parsed); } catch (e) {}\n        }\n\n        let timeStr = new Date(item.timestamp).toLocaleTimeString();\n\n        if (parsed && typeof parsed === 'object') {\n            let level = parsed.level || 'INFO';\n            let binId = parsed.bin_id || 'bin-01';\n            let fill = parsed.fill_pct ?? '?';\n            let message = parsed.message || `${level} - Bin ${binId} at ${fill}%`;\n\n            lines.push(`- **${timeStr}** | **${level}** | ${message}`);\n        } else {\n            lines.push(`- **${timeStr}** | ${String(parsed)}`);\n        }\n    }\n\n    node.send([null, { payload: lines.join('\\n') || '- No alerts logged yet' }]);\n}\n\nreturn null;",
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
@@ -959,14 +981,14 @@
     "wires": [
       [],
       [
-        "widget_text_alert_history"
+        "6b1a7b278e3b3310"
       ]
     ]
   },
   {
-    "id": "http_in_recent",
+    "id": "ff4d7dd3a567f0f8",
     "type": "http in",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "GET /api/recent-events",
     "url": "/nodered/api/recent-events",
     "method": "get",
@@ -977,14 +999,14 @@
     "y": 420,
     "wires": [
       [
-        "func_get_buffer"
+        "956e30ee31b6c59c"
       ]
     ]
   },
   {
-    "id": "func_get_buffer",
+    "id": "956e30ee31b6c59c",
     "type": "function",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Retrieve Buffer",
     "func": "let buffer = flow.get('event_buffer') || { virtual: [], sensor: [], alerts: [] };\nmsg.payload = buffer;\nreturn msg;",
     "outputs": 1,
@@ -997,14 +1019,14 @@
     "y": 420,
     "wires": [
       [
-        "http_response_recent"
+        "50a02a7999a5cfa9"
       ]
     ]
   },
   {
-    "id": "http_response_recent",
+    "id": "50a02a7999a5cfa9",
     "type": "http response",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "name": "Send Response",
     "statusCode": "200",
     "headers": {
@@ -1015,9 +1037,9 @@
     "wires": []
   },
   {
-    "id": "widget_text_alert_history",
+    "id": "6b1a7b278e3b3310",
     "type": "ui-markdown",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "group": "group_alerts",
     "name": "Alert History",
     "order": 1,
@@ -1032,9 +1054,9 @@
     ]
   },
   {
-    "id": "widget_text_alert_count",
+    "id": "f962d7c0d1421dfb",
     "type": "ui-text",
-    "z": "f00000000000000d",
+    "z": "c2309bf37c573735",
     "group": "group_alerts",
     "order": 2,
     "width": "",
@@ -1056,9 +1078,9 @@
     "wires": []
   },
   {
-    "id": "mqtt_in_ml",
+    "id": "2dcb36b96b2d1dc8",
     "type": "mqtt in",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "Prediction Sub",
     "topic": "smartbin/bin-01/usage_prediction",
     "qos": "1",
@@ -1071,14 +1093,14 @@
     "y": 180,
     "wires": [
       [
-        "json_parse_ml"
+        "6e136a39734690a3"
       ]
     ]
   },
   {
-    "id": "json_parse_ml",
+    "id": "6e136a39734690a3",
     "type": "json",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "Parse Payload",
     "property": "payload",
     "action": "obj",
@@ -1087,15 +1109,15 @@
     "y": 180,
     "wires": [
       [
-        "func_ml_ui_format",
-        "func_ml_display_format"
+        "9c89c91ec0cde4fc",
+        "088847b471aaec54"
       ]
     ]
   },
   {
-    "id": "func_ml_ui_format",
+    "id": "9c89c91ec0cde4fc",
     "type": "function",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "Pre-process ML UI Payload",
     "func": "let prediction = msg.payload.prediction;\nif (Array.isArray(prediction)) prediction = prediction[0];\nlet pred_upper = (prediction || '').toUpperCase();\nmsg.payload.prediction_display = pred_upper;\nmsg.payload.is_busy = (pred_upper === 'BUSY');\nmsg.payload.confidence_display = ((msg.payload.confidence || 0) * 100).toFixed(0) + '%';\nmsg.payload.text_color = msg.payload.is_busy ? '#f38ba8' : '#a6e3a1';\nreturn msg;",
     "outputs": 1,
@@ -1108,14 +1130,14 @@
     "y": 100,
     "wires": [
       [
-        "template_ml_card"
+        "4edab4a472a6f882"
       ]
     ]
   },
   {
-    "id": "template_ml_card",
+    "id": "4edab4a472a6f882",
     "type": "template",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "HTML Card Template",
     "field": "payload",
     "fieldType": "msg",
@@ -1127,14 +1149,14 @@
     "y": 100,
     "wires": [
       [
-        "widget_text_ml"
+        "f0619abb748a0b91"
       ]
     ]
   },
   {
-    "id": "func_ml_display_format",
+    "id": "088847b471aaec54",
     "type": "function",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "Format display",
     "func": "let prediction = msg.payload.prediction;\nif (Array.isArray(prediction)) prediction = prediction[0];\nlet ts = msg.payload.utc_prediction_timestamp ? new Date(msg.payload.utc_prediction_timestamp * 1000).toISOString() : new Date().toISOString();\nmsg.payload = { prediction: prediction, confidence: msg.payload.confidence, timestamp: ts, device_id: 'nodered-ml-listener', event_type: 'ml_display', event_time: ts };\nreturn msg;",
     "outputs": 1,
@@ -1147,14 +1169,14 @@
     "y": 240,
     "wires": [
       [
-        "json_stringify_ml_display"
+        "73f0caeb673cfbf7"
       ]
     ]
   },
   {
-    "id": "json_stringify_ml_display",
+    "id": "73f0caeb673cfbf7",
     "type": "json",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "Stringify Output",
     "property": "payload",
     "action": "str",
@@ -1163,14 +1185,14 @@
     "y": 240,
     "wires": [
       [
-        "mqtt_out_ml_display"
+        "dda74fc721024d2e"
       ]
     ]
   },
   {
-    "id": "mqtt_out_ml_display",
+    "id": "dda74fc721024d2e",
     "type": "mqtt out",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "name": "Publish ML Display",
     "topic": "smartbin/nodered/ml_display",
     "qos": "1",
@@ -1186,9 +1208,9 @@
     "wires": []
   },
   {
-    "id": "widget_text_ml",
+    "id": "f0619abb748a0b91",
     "type": "ui-template",
-    "z": "f00000000000000e",
+    "z": "d631b67f2112f182",
     "group": "group_virtual_sensors",
     "name": "ML Prediction Display",
     "order": 2,
@@ -1201,9 +1223,9 @@
     ]
   },
   {
-    "id": "inject_heartbeat",
+    "id": "730825ea9ab5be79",
     "type": "inject",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "name": "30s Heartbeat",
     "props": [
       {
@@ -1221,14 +1243,14 @@
     "y": 380,
     "wires": [
       [
-        "func_format_heartbeat"
+        "699531db19fac776"
       ]
     ]
   },
   {
-    "id": "func_format_heartbeat",
+    "id": "699531db19fac776",
     "type": "function",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "name": "Timestamp Heartbeat",
     "func": "msg.payload = { status: msg.payload.status, timestamp: new Date().toISOString(), device_id: 'node-red-runtime', event_type: 'heartbeat', event_time: new Date().toISOString() };\nreturn msg;",
     "outputs": 1,
@@ -1241,14 +1263,14 @@
     "y": 380,
     "wires": [
       [
-        "json_stringify_hb"
+        "728a0e21f56a033d"
       ]
     ]
   },
   {
-    "id": "json_stringify_hb",
+    "id": "728a0e21f56a033d",
     "type": "json",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "name": "Stringify HB",
     "property": "payload",
     "action": "str",
@@ -1257,14 +1279,14 @@
     "y": 380,
     "wires": [
       [
-        "mqtt_out_heartbeat"
+        "fd2c336bc14faa73"
       ]
     ]
   },
   {
-    "id": "mqtt_out_heartbeat",
+    "id": "fd2c336bc14faa73",
     "type": "mqtt out",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "name": "Heartbeat Pub",
     "topic": "smartbin/nodered/heartbeat",
     "qos": "1",
@@ -1280,9 +1302,9 @@
     "wires": []
   },
   {
-    "id": "inject_uptime",
+    "id": "074bb114a17602a2",
     "type": "inject",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "name": "1s Tick",
     "props": [
       {
@@ -1300,14 +1322,14 @@
     "y": 460,
     "wires": [
       [
-        "func_uptime"
+        "9bb0e650ee9d97d4"
       ]
     ]
   },
   {
-    "id": "func_uptime",
+    "id": "9bb0e650ee9d97d4",
     "type": "function",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "name": "Uptime Counter",
     "func": "let uptime = flow.get('uptime_seconds') || 0;\nuptime++;\nflow.set('uptime_seconds', uptime);\nlet sec = uptime % 60;\nlet min = Math.floor(uptime / 60) % 60;\nlet hrs = Math.floor(uptime / 3600) % 24;\nlet days = Math.floor(uptime / 86400);\nlet uptime_str = '';\nif (days > 0) uptime_str += days + 'd ';\nuptime_str += (hrs < 10 ? '0' : '') + hrs + ':' + (min < 10 ? '0' : '') + min + ':' + (sec < 10 ? '0' : '') + sec;\nmsg.payload = uptime_str;\nreturn msg;",
     "outputs": 1,
@@ -1320,14 +1342,14 @@
     "y": 460,
     "wires": [
       [
-        "widget_text_uptime"
+        "d9d1e8f939cf8725"
       ]
     ]
   },
   {
-    "id": "widget_text_uptime",
+    "id": "d9d1e8f939cf8725",
     "type": "ui-text",
-    "z": "f00000000000000f",
+    "z": "69d6bc9e21260366",
     "group": "group_system",
     "order": 1,
     "width": "",
@@ -1347,13 +1369,5 @@
     "x": 560,
     "y": 460,
     "wires": []
-  },
-  {
-    "id": "e47ff8625f08df6e",
-    "type": "global-config",
-    "env": [],
-    "modules": {
-      "@flowfuse/node-red-dashboard": "1.30.2"
-    }
   }
 ]
