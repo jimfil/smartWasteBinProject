@@ -14,3 +14,6 @@ output/
 .DS_Store
 Thumbs.db
 src/models/*.joblib
+
+nodered_data/*
+!nodered_data/flows.json
