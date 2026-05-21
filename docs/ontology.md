@@ -229,3 +229,59 @@ The following terms are aliased in `context.jsonld` for pipeline observation eve
 ### trafficLevel
 - **Type:** `xsd:string`
 - **Description:** Qualitative indicator of foot traffic in the environment. Values: `"low"`, `"medium"`, `"high"`.
+
+---
+
+## Virtual Telemetry & Virtual Sensor Terms
+
+### fill_pct (or fill_level)
+- **Type:** `xsd:integer`
+- **Description:** The current fill level percentage of the wastebin, ranging from `0` (completely empty) to `100` (completely full). Used by Flow A, Flow B, and the Node-RED dashboard gauges.
+
+### weight_g
+- **Type:** `xsd:float`
+- **Description:** The current weight of the wastebin in grams. Used by Flow A, Flow B, and dashboard indicators to monitor load.
+
+### motion_state (or motionState)
+- **Type:** `xsd:string`
+- **Description:** Simple state representation of PIR motion telemetry. Values: `"detected"` (sensed movement), `"clear"` (no movement).
+
+---
+
+## Machine Learning & Prediction Terms
+
+### prediction
+- **Type:** `xsd:string` (or array of `xsd:string`)
+- **Description:** The predicted usage state of the wastebin for a future time window (e.g., `"busy"`, `"quiet"`).
+
+### confidence
+- **Type:** `xsd:float`
+- **Description:** A value between `0.0` and `1.0` representing the confidence or probability score of the ML prediction.
+
+### predicted_hour
+- **Type:** `xsd:integer`
+- **Description:** The hour of the day (in 24-hour format, `0` to `23`) for which the usage prediction is applicable.
+
+### model_name
+- **Type:** `xsd:string`
+- **Description:** The name or identifier of the machine learning model used to generate the prediction (e.g., `"random_forest_v1"`).
+
+---
+
+## Alerting & Orchestration Terms
+
+### level
+- **Type:** `xsd:string`
+- **Description:** The severity level of a rule-based or virtual sensor alert. Values: `"LOW"`, `"MEDIUM"`, `"HIGH"`, `"CRITICAL"`.
+
+### acknowledged
+- **Type:** `xsd:boolean`
+- **Description:** Indicates whether a generated alert has been reviewed and acknowledged by an operator.
+
+### ack_timestamp
+- **Type:** `xsd:dateTime`
+- **Description:** The UTC timestamp recording when an alert was acknowledged by an operator.
+
+### ack_by (or operator)
+- **Type:** `xsd:string`
+- **Description:** The name or role of the operator or dashboard client instance that acknowledged the alert.

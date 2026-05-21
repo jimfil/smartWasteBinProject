@@ -59,16 +59,6 @@ channels:
       eventCount:
         $ref: '#/components/messages/EventCount'
 
-  usageIntensity:
-    address: smartbin/{bin_id}/usage_intensity
-    description: Rule-based usage intensity evaluated over a time window
-    parameters:
-      bin_id:
-        description: Wastebin identifier
-    messages:
-      usageIntensity:
-        $ref: '#/components/messages/UsageIntensity'
-
   usagePrediction:
     address: smartbin/{bin_id}/usage_prediction
     description: ML-based prediction of busy/quiet periods for the next hour
@@ -78,6 +68,90 @@ channels:
     messages:
       usagePrediction:
         $ref: '#/components/messages/UsagePrediction'
+
+  criticalAlert:
+    address: smartbin/alerts/critical
+    description: Active high-priority critical fill alert published by Node-RED (fill > 75%)
+    messages:
+      criticalAlert:
+        $ref: '#/components/messages/CriticalAlert'
+
+  warningAlert:
+    address: smartbin/alerts/warning
+    description: Active warning fill alert published by Node-RED (fill 50% - 75%)
+    messages:
+      warningAlert:
+        $ref: '#/components/messages/WarningAlert'
+
+  alertAckPipeline:
+    address: smartbin/alerts/ack
+    description: Retained alert acknowledgment forwarded into the main pipeline by the bridge
+    messages:
+      alertAck:
+        $ref: '#/components/messages/AlertAck'
+
+  fillLevelTelemetry:
+    address: smartbin/sensor/fill_level
+    description: Mock telemetry topic publishing the current fill level percentage
+    messages:
+      fillLevelTelemetry:
+        $ref: '#/components/messages/FillLevelTelemetry'
+
+  weightTelemetry:
+    address: smartbin/sensor/weight
+    description: Mock telemetry topic publishing the bin weight in grams
+    messages:
+      weightTelemetry:
+        $ref: '#/components/messages/WeightTelemetry'
+
+  motionTelemetry:
+    address: smartbin/sensor/motion
+    description: Mock telemetry topic publishing raw PIR motion state
+    messages:
+      motionTelemetry:
+        $ref: '#/components/messages/MotionTelemetry'
+
+  nodeRedStatus:
+    address: smartbin/nodered/status
+    description: Node-RED broker connection status (birth/will/close retained messages)
+    messages:
+      nodeRedStatus:
+        $ref: '#/components/messages/NodeRedStatus'
+
+  nodeRedHeartbeat:
+    address: smartbin/nodered/heartbeat
+    description: Heartbeat packet injected every 30 seconds by Node-RED to confirm health
+    messages:
+      nodeRedHeartbeat:
+        $ref: '#/components/messages/NodeRedHeartbeat'
+
+  nodeRedUsageIntensity:
+    address: smartbin/nodered/usage_intensity
+    description: Redundant rule-based usage intensity evaluated and published by Node-RED Flow B
+    messages:
+      nodeRedUsageIntensity:
+        $ref: '#/components/messages/NodeRedUsageIntensity'
+
+  nodeRedMlDisplay:
+    address: smartbin/nodered/ml_display
+    description: Custom prediction metrics formatted for display cards by Node-RED Flow E
+    messages:
+      nodeRedMlDisplay:
+        $ref: '#/components/messages/NodeRedMlDisplay'
+
+  nodeRedAlertLog:
+    address: smartbin/nodered/alert_log
+    description: Circular buffer event log for alerts forwarded by Node-RED to the Python bridge
+    messages:
+      nodeRedAlertLog:
+        $ref: '#/components/messages/NodeRedAlertLog'
+
+  nodeRedAlertAck:
+    address: smartbin/nodered/alert_ack
+    description: Control topic where the Node-RED dashboard publishes alert acknowledgements
+    messages:
+      nodeRedAlertAck:
+        $ref: '#/components/messages/NodeRedAlertAck'
 
 operations:
   publishMotionEvent:
@@ -118,17 +192,83 @@ operations:
       $ref: '#/channels/eventCount'
     summary: Producer publishes running event counter
 
-  publishUsageIntensity:
-    action: send
-    channel:
-      $ref: '#/channels/usageIntensity'
-    summary: Virtual sensor publishes evaluated usage intensity
-
   publishUsagePrediction:
     action: send
     channel:
       $ref: '#/channels/usagePrediction'
     summary: ML virtual sensor publishes hourly usage prediction
+
+  publishCriticalAlert:
+    action: send
+    channel:
+      $ref: '#/channels/criticalAlert'
+    summary: Node-RED publishes a critical fill level alert
+
+  publishWarningAlert:
+    action: send
+    channel:
+      $ref: '#/channels/warningAlert'
+    summary: Node-RED publishes a warning fill level alert
+
+  publishAlertAck:
+    action: send
+    channel:
+      $ref: '#/channels/alertAckPipeline'
+    summary: Python bridge publishes an alert acknowledgment into the main pipeline
+
+  publishFillLevelTelemetry:
+    action: send
+    channel:
+      $ref: '#/channels/fillLevelTelemetry'
+    summary: Simulator publishes mock fill level telemetry
+
+  publishWeightTelemetry:
+    action: send
+    channel:
+      $ref: '#/channels/weightTelemetry'
+    summary: Simulator publishes mock weight telemetry
+
+  publishMotionTelemetry:
+    action: send
+    channel:
+      $ref: '#/channels/motionTelemetry'
+    summary: Simulator publishes mock motion telemetry
+
+  publishNodeRedStatus:
+    action: send
+    channel:
+      $ref: '#/channels/nodeRedStatus'
+    summary: Node-RED runtime publishes connection status (birth/will/close)
+
+  publishNodeRedHeartbeat:
+    action: send
+    channel:
+      $ref: '#/channels/nodeRedHeartbeat'
+    summary: Node-RED publishes a recurring health heartbeat
+
+  publishNodeRedUsageIntensity:
+    action: send
+    channel:
+      $ref: '#/channels/nodeRedUsageIntensity'
+    summary: Node-RED Flow B publishes evaluated usage intensity
+
+  publishNodeRedMlDisplay:
+    action: send
+    channel:
+      $ref: '#/channels/nodeRedMlDisplay'
+    summary: Node-RED Flow E publishes formatted ML display card data
+
+  publishNodeRedAlertLog:
+    action: send
+    channel:
+      $ref: '#/channels/nodeRedAlertLog'
+    summary: Node-RED Flow D publishes an alert event to the logging bridge
+
+  publishNodeRedAlertAck:
+    action: send
+    channel:
+      $ref: '#/channels/nodeRedAlertAck'
+    summary: Node-RED Dashboard publishes an operator alert acknowledgment
 
 components:
   messages:
@@ -216,26 +356,6 @@ components:
         type: string
         description: String representation of an integer counting total events
 
-    UsageIntensity:
-      name: UsageIntensity
-      contentType: application/json
-      payload:
-        type: object
-        properties:
-          state:
-            type: string
-            enum: [idle, low, medium, high]
-            description: Usage state
-          count:
-            type: integer
-            description: Number of events in the window
-          window_minutes:
-            type: integer
-            description: Evaluation window size in minutes
-          timestamp:
-            type: number
-            description: Unix timestamp of the evaluation
-
     UsagePrediction:
       name: UsagePrediction
       contentType: application/json
@@ -262,3 +382,223 @@ components:
           features_used:
             type: object
             description: Features used for the prediction
+
+    CriticalAlert:
+      name: CriticalAlert
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          bin_id:
+            type: string
+            description: Identifier of the wastebin
+            example: "bin-01"
+          level:
+            type: string
+            enum: [CRITICAL]
+          fill_pct:
+            type: integer
+            description: Current fill percentage
+            example: 85
+          weight_g:
+            type: number
+            description: Current weight in grams
+            example: 4200
+          timestamp:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of alert generation
+
+    WarningAlert:
+      name: WarningAlert
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          bin_id:
+            type: string
+            description: Identifier of the wastebin
+            example: "bin-01"
+          level:
+            type: string
+            enum: [HIGH]
+          fill_pct:
+            type: integer
+            description: Current fill percentage
+            example: 65
+          weight_g:
+            type: number
+            description: Current weight in grams
+            example: 3100
+          timestamp:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of alert generation
+
+    AlertAck:
+      name: AlertAck
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          bin_id:
+            type: string
+            description: Identifier of the wastebin
+            example: "bin-01"
+          level:
+            type: string
+            description: Alert level that was acknowledged (HIGH or CRITICAL)
+            example: "CRITICAL"
+          ack_at:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of acknowledgment
+          ack_by:
+            type: string
+            description: Operator or system component that acknowledged the alert
+            example: "Node-RED Dashboard"
+
+    FillLevelTelemetry:
+      name: FillLevelTelemetry
+      contentType: text/plain
+      payload:
+        type: string
+        description: Current fill level percentage (0 to 100)
+        example: "45"
+
+    WeightTelemetry:
+      name: WeightTelemetry
+      contentType: text/plain
+      payload:
+        type: string
+        description: Current weight in grams
+        example: "1250"
+
+    MotionTelemetry:
+      name: MotionTelemetry
+      contentType: text/plain
+      payload:
+        type: string
+        enum: [detected, clear]
+        description: Simple motion detection state
+        example: "detected"
+
+    NodeRedStatus:
+      name: NodeRedStatus
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          state:
+            type: string
+            enum: [online, offline]
+            description: Node-RED MQTT connection status
+            example: "online"
+
+    NodeRedHeartbeat:
+      name: NodeRedHeartbeat
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          timestamp:
+            type: string
+            format: date-time
+            description: ISO 8601 heartbeat timestamp
+          uptime_seconds:
+            type: integer
+            description: Node-RED container uptime in seconds
+            example: 1200
+
+    NodeRedUsageIntensity:
+      name: NodeRedUsageIntensity
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          bin_id:
+            type: string
+            description: Identifier of the wastebin
+            example: "bin-01"
+          level:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, CRITICAL]
+            description: Rule-based intensity evaluated by Node-RED
+          fill_pct:
+            type: integer
+            description: Current fill percentage
+            example: 82
+          weight_g:
+            type: number
+            description: Current weight in grams
+            example: 4100
+          timestamp:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of the evaluation
+
+    NodeRedMlDisplay:
+      name: NodeRedMlDisplay
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          prediction:
+            type: string
+            description: Predicted usage state
+            example: "busy"
+          confidence:
+            type: number
+            description: Prediction confidence
+            example: 0.85
+          predicted_hour:
+            type: integer
+            description: Hour predicted (0-23)
+            example: 14
+          timestamp:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of processed display card
+
+    NodeRedAlertLog:
+      name: NodeRedAlertLog
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          bin_id:
+            type: string
+            description: Identifier of the wastebin
+            example: "bin-01"
+          level:
+            type: string
+            enum: [HIGH, CRITICAL]
+          fill_pct:
+            type: number
+            description: Fill percentage
+          weight_g:
+            type: number
+            description: Weight in grams
+          timestamp:
+            type: string
+            format: date-time
+            description: ISO 8601 alert log timestamp
+
+    NodeRedAlertAck:
+      name: NodeRedAlertAck
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          bin_id:
+            type: string
+            description: Identifier of the wastebin
+            example: "bin-01"
+          level:
+            type: string
+            description: Alert level to acknowledge (HIGH or CRITICAL)
+            example: "CRITICAL"
+          operator:
+            type: string
+            description: Operator name or dashboard instance performing the action
+            example: "Node-RED Dashboard"

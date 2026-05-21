@@ -17,3 +17,4 @@ src/models/*.joblib
 
 nodered_data/*
 !nodered_data/flows.json
+hass-config/*
