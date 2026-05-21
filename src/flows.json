@@ -680,7 +680,7 @@
         "type": "function",
         "z": "f00000000000000d",
         "name": "Circular Event Buffer",
-        "func": "let buffer = flow.get(\"event_buffer\") || { \"virtual\": [], \"sensor\": [], \"alerts\": [] };\nlet topic = msg.topic;\nlet category = \"sensor\";\n\nif (topic.includes(\"virtual\")) {\n    category = \"virtual\";\n} else if (topic.includes(\"alerts\") || topic.includes(\"nodered/alert_log\")) {\n    category = \"alerts\";\n}\n\nlet record = {\n    \"topic\": topic,\n    \"payload\": msg.payload,\n    \"timestamp\": new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) {\n    buffer[category].shift();\n}\n\nflow.set(\"event_buffer\", buffer);\n\n// Update alert list representation on dashboard\nif (category === \"alerts\") {\n    let listStr = \"\";\n    for(let i = buffer.alerts.length - 1; i >= Math.max(0, buffer.alerts.length - 10); i--){\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n        if (typeof parsed === 'string') {\n            try { parsed = JSON.parse(parsed); } catch(e) {}\n        }\n        let msgText = typeof parsed === 'object' ? (parsed.message || JSON.stringify(parsed)) : parsed;\n        listStr += \"* **\" + new Date(item.timestamp).toLocaleTimeString() + \"**: \" + msgText + \"\\n\";\n    }\n    let outMsg = { payload: listStr || \"*No alerts logged yet*\" };\n    node.send([null, outMsg]);\n}\n\nreturn null;",
+        "func": "let topic = msg.topic || \"\";\n\n// Ignore republished logging topics starting with smartbin/nodered/\n// to prevent duplicate logs in the circular buffer and timeline\nif (topic.startsWith(\"smartbin/nodered/\")) {\n    return null;\n}\n\nlet buffer = flow.get(\"event_buffer\") || { \"virtual\": [], \"sensor\": [], \"alerts\": [] };\nlet category = \"sensor\";\n\nif (topic.includes(\"virtual\")) {\n    category = \"virtual\";\n} else if (topic.includes(\"alerts\")) {\n    category = \"alerts\";\n}\n\nlet record = {\n    \"topic\": topic,\n    \"payload\": msg.payload,\n    \"timestamp\": new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) {\n    buffer[category].shift();\n}\n\nflow.set(\"event_buffer\", buffer);\n\n// Update alert list representation on dashboard\nif (category === \"alerts\") {\n    let listStr = \"\";\n    for(let i = buffer.alerts.length - 1; i >= Math.max(0, buffer.alerts.length - 10); i--){\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n        if (typeof parsed === 'string') {\n            try { parsed = JSON.parse(parsed); } catch(e) {}\n        }\n        let msgText = typeof parsed === 'object' ? (parsed.message || JSON.stringify(parsed)) : parsed;\n        listStr += \"* **\" + new Date(item.timestamp).toLocaleTimeString() + \"**: \" + msgText + \"\\n\";\n    }\n    let outMsg = { payload: listStr || \"*No alerts logged yet*\" };\n    node.send([null, outMsg]);\n}\n\nreturn null;",
         "outputs": 2,
         "timeout": 0,
         "noerr": 0,
@@ -988,15 +988,15 @@
         "max": 100,
         "segments": [
             {
-                "from": "0",
+                "from": 0,
                 "color": "#a6e3a1"
             },
             {
-                "from": "50",
+                "from": 50,
                 "color": "#f9e2af"
             },
             {
-                "from": "75",
+                "from": 75,
                 "color": "#f38ba8"
             }
         ],
@@ -1023,15 +1023,15 @@
         "max": 5000,
         "segments": [
             {
-                "from": "0",
+                "from": 0,
                 "color": "#a6e3a1"
             },
             {
-                "from": "2500",
+                "from": 2500,
                 "color": "#f9e2af"
             },
             {
-                "from": "4000",
+                "from": 4000,
                 "color": "#f38ba8"
             }
         ],
