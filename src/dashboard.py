@@ -86,13 +86,23 @@ def on_message(client, userdata, msg):
 
         # 4. Handle Analytics topics (usage_intensity, usage_prediction)
         if "usage_" in topic:
-            # Usage intensity uses 'state', ML prediction uses 'prediction' (which is a list)
-            state = record.get("state") or record.get("prediction")
+            # Usage intensity uses 'state' or 'level', ML prediction uses 'prediction' (which can be a list)
+            state = record.get("state") or record.get("level") or record.get("prediction")
             if isinstance(state, list) and len(state) > 0:
                 state = state[0]
             
             timestamp = record.get("timestamp") or record.get("utc_prediction_timestamp")
-            time_str = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S') if timestamp else "now"
+            if isinstance(timestamp, (int, float)):
+                time_str = datetime.fromtimestamp(timestamp).strftime('%H:%M:%S')
+            elif isinstance(timestamp, str):
+                time_str = timestamp
+                if "T" in timestamp:
+                    try:
+                        time_str = timestamp.split("T")[1][:8]
+                    except Exception:
+                        pass
+            else:
+                time_str = "now"
 
             print(f"{COLORS['BLUE']}[{time_str}]{COLORS['RESET']} "
                   f"{COLORS['YELLOW']}ANALYTICS{COLORS['RESET']} on {COLORS['BOLD']}{topic}{COLORS['RESET']}: "

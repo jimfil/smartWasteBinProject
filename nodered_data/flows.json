@@ -782,7 +782,7 @@
         "type": "function",
         "z": "f00000000000000e",
         "name": "Format display",
-        "func": "msg.payload = {\n    \"prediction\": msg.payload.prediction[0],\n    \"confidence\": msg.payload.confidence,\n    \"timestamp\": new Date(msg.payload.utc_prediction_timestamp * 1000).toISOString()\n};\nreturn msg;",
+        "func": "msg.payload = {\n    \"prediction\": msg.payload.prediction[0],\n    \"confidence\": msg.payload.confidence,\n    \"timestamp\": new Date(msg.payload.utc_prediction_timestamp * 1000).toISOString(),\n    \"device_id\": \"nodered-ml-listener\",\n    \"event_type\": \"ml_display\",\n    \"event_time\": new Date(msg.payload.utc_prediction_timestamp * 1000).toISOString()\n};\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
