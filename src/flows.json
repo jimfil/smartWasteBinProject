@@ -107,10 +107,26 @@
         "layout": "grid",
         "theme": "ui_theme_id",
         "breakpoints": [
-            { "name": "Default", "px": 0, "cols": 3 },
-            { "name": "Tablet", "px": 576, "cols": 6 },
-            { "name": "Small Desktop", "px": 768, "cols": 9 },
-            { "name": "Desktop", "px": 1024, "cols": 12 }
+            {
+                "name": "Default",
+                "px": 0,
+                "cols": 3
+            },
+            {
+                "name": "Tablet",
+                "px": 576,
+                "cols": 6
+            },
+            {
+                "name": "Small Desktop",
+                "px": 768,
+                "cols": 9
+            },
+            {
+                "name": "Desktop",
+                "px": 1024,
+                "cols": 12
+            }
         ],
         "order": 1
     },
@@ -664,7 +680,7 @@
         "type": "function",
         "z": "f00000000000000d",
         "name": "Circular Event Buffer",
-        "func": "let buffer = flow.get(\"event_buffer\") || { \"virtual\": [], \"sensor\": [], \"alerts\": [] };\nlet topic = msg.topic;\nlet category = \"sensor\";\n\nif (topic.includes(\"virtual\")) {\n    category = \"virtual\";\n} else if (topic.includes(\"alerts\") || topic.includes(\"nodered/alert_log\")) {\n    category = \"alerts\";\n}\n\nlet record = {\n    \"topic\": topic,\n    \"payload\": msg.payload,\n    \"timestamp\": new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) {\n    buffer[category].shift();\n}\n\nflow.set(\"event_buffer\", buffer);\n\n// Update alert list representation on dashboard\nif (category === \"alerts\") {\n    let listStr = \"\";\n    for(let i = buffer.alerts.length - 1; i >= Math.max(0, buffer.alerts.length - 10); i--){\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n        if (typeof parsed === 'string') {\n            try { parsed = json.loads(parsed); } catch(e) {}\n        }\n        let msgText = typeof parsed === 'object' ? (parsed.message || JSON.stringify(parsed)) : parsed;\n        listStr += \"* **\" + new Date(item.timestamp).toLocaleTimeString() + \"**: \" + msgText + \"\\n\";\n    }\n    let outMsg = { payload: listStr || \"*No alerts logged yet*\" };\n    node.send([null, outMsg]);\n}\n\nreturn null;",
+        "func": "let buffer = flow.get(\"event_buffer\") || { \"virtual\": [], \"sensor\": [], \"alerts\": [] };\nlet topic = msg.topic;\nlet category = \"sensor\";\n\nif (topic.includes(\"virtual\")) {\n    category = \"virtual\";\n} else if (topic.includes(\"alerts\") || topic.includes(\"nodered/alert_log\")) {\n    category = \"alerts\";\n}\n\nlet record = {\n    \"topic\": topic,\n    \"payload\": msg.payload,\n    \"timestamp\": new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) {\n    buffer[category].shift();\n}\n\nflow.set(\"event_buffer\", buffer);\n\n// Update alert list representation on dashboard\nif (category === \"alerts\") {\n    let listStr = \"\";\n    for(let i = buffer.alerts.length - 1; i >= Math.max(0, buffer.alerts.length - 10); i--){\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n        if (typeof parsed === 'string') {\n            try { parsed = JSON.parse(parsed); } catch(e) {}\n        }\n        let msgText = typeof parsed === 'object' ? (parsed.message || JSON.stringify(parsed)) : parsed;\n        listStr += \"* **\" + new Date(item.timestamp).toLocaleTimeString() + \"**: \" + msgText + \"\\n\";\n    }\n    let outMsg = { payload: listStr || \"*No alerts logged yet*\" };\n    node.send([null, outMsg]);\n}\n\nreturn null;",
         "outputs": 2,
         "timeout": 0,
         "noerr": 0,
@@ -753,8 +769,25 @@
         "y": 180,
         "wires": [
             [
-                "template_ml_card",
+                "func_ml_ui_format",
                 "func_ml_display_format"
+            ]
+        ]
+    },
+    {
+        "id": "func_ml_ui_format",
+        "type": "function",
+        "z": "f00000000000000e",
+        "name": "Pre-process ML UI Payload",
+        "func": "let prediction = msg.payload.prediction;\nif (Array.isArray(prediction)) {\n    prediction = prediction[0];\n}\nlet pred_upper = (prediction || \"\").toUpperCase();\nmsg.payload.prediction_display = pred_upper;\nmsg.payload.is_busy = (pred_upper === \"BUSY\");\nmsg.payload.confidence_display = (msg.payload.confidence * 100).toFixed(0) + \"%\";\nmsg.payload.text_color = msg.payload.is_busy ? \"#f38ba8\" : \"#a6e3a1\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "x": 350,
+        "y": 140,
+        "wires": [
+            [
+                "template_ml_card"
             ]
         ]
     },
@@ -767,7 +800,7 @@
         "fieldType": "msg",
         "format": "html",
         "syntax": "mustache",
-        "template": "<div style=\"background-color: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 12px; font-family: 'Inter', sans-serif;\">\n  <h4 style=\"margin: 0 0 8px 0; color: #cdd6f4;\">ML Busy Status Prediction</h4>\n  <div style=\"display: flex; justify-content: space-between; align-items: center;\">\n    <span style=\"font-weight: 600; font-size: 1.1em; color: {{#payload.prediction}} {{.}} {{/payload.prediction}} === 'BUSY' ? '#f38ba8' : '#a6e3a1';\">\n      {{payload.prediction}}\n    </span>\n    <span style=\"background-color: #89b4fa; color: #11111b; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;\">\n      {{payload.confidence}} Confidence\n    </span>\n  </div>\n  <div style=\"margin-top: 8px; font-size: 0.75em; color: #a6adc8;\">\n    Predicted Hour: {{payload.predicted_hour}}:00<br/>\n    Features: {{payload.features_used.day_of_week}}, Hour {{payload.features_used.hour}}\n  </div>\n</div>",
+        "template": "<div style=\"background-color: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 12px; font-family: 'Inter', sans-serif;\">\n  <h4 style=\"margin: 0 0 8px 0; color: #cdd6f4;\">ML Busy Status Prediction</h4>\n  <div style=\"display: flex; justify-content: space-between; align-items: center;\">\n    <span style=\"font-weight: 600; font-size: 1.1em; color: {{payload.text_color}};\">\n      {{payload.prediction_display}}\n    </span>\n    <span style=\"background-color: #89b4fa; color: #11111b; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;\">\n      {{payload.confidence_display}} Confidence\n    </span>\n  </div>\n  <div style=\"margin-top: 8px; font-size: 0.75em; color: #a6adc8;\">\n    Predicted Hour: {{payload.predicted_hour}}:00<br/>\n    Features: {{payload.features_used.day_of_week}}, Hour {{payload.features_used.hour}}\n  </div>\n</div>",
         "output": "str",
         "x": 540,
         "y": 140,
@@ -937,40 +970,6 @@
         ]
     },
     {
-        "id": "mqtt_in_last_seen",
-        "type": "mqtt in",
-        "z": "f00000000000000f",
-        "name": "Topic Tracker",
-        "topic": "smartbin/#",
-        "qos": "1",
-        "datatype": "auto-detect",
-        "broker": "broker_config_node",
-        "x": 130,
-        "y": 540,
-        "wires": [
-            [
-                "func_topic_tracker"
-            ]
-        ]
-    },
-    {
-        "id": "func_topic_tracker",
-        "type": "function",
-        "z": "f00000000000000f",
-        "name": "Update Last Seen",
-        "func": "let lastSeenMap = flow.get(\"last_seen_map\") || {};\nlet topic = msg.topic;\nlastSeenMap[topic] = new Date().toLocaleTimeString();\nflow.set(\"last_seen_map\", lastSeenMap);\n\nlet outStr = \"\";\nlet keys = Object.keys(lastSeenMap).sort();\nfor (let k of keys) {\n    outStr += \"* **\" + k + \"**: \" + lastSeenMap[k] + \"\\n\";\n}\n\nmsg.payload = outStr || \"No topics active yet\";\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "x": 350,
-        "y": 540,
-        "wires": [
-            [
-                "widget_text_last_seen"
-            ]
-        ]
-    },
-    {
         "id": "widget_gauge_fill",
         "type": "ui-gauge",
         "z": "f00000000000000a",
@@ -988,9 +987,18 @@
         "min": 0,
         "max": 100,
         "segments": [
-            { "from": "0", "color": "#a6e3a1" },
-            { "from": "50", "color": "#f9e2af" },
-            { "from": "75", "color": "#f38ba8" }
+            {
+                "from": "0",
+                "color": "#a6e3a1"
+            },
+            {
+                "from": "50",
+                "color": "#f9e2af"
+            },
+            {
+                "from": "75",
+                "color": "#f38ba8"
+            }
         ],
         "x": 390,
         "y": 80,
@@ -1014,9 +1022,18 @@
         "min": 0,
         "max": 5000,
         "segments": [
-            { "from": "0", "color": "#a6e3a1" },
-            { "from": "2500", "color": "#f9e2af" },
-            { "from": "4000", "color": "#f38ba8" }
+            {
+                "from": "0",
+                "color": "#a6e3a1"
+            },
+            {
+                "from": "2500",
+                "color": "#f9e2af"
+            },
+            {
+                "from": "4000",
+                "color": "#f38ba8"
+            }
         ],
         "x": 380,
         "y": 140,
@@ -1052,13 +1069,14 @@
     },
     {
         "id": "widget_text_ml",
-        "type": "ui-markdown",
+        "type": "ui-template",
         "z": "f00000000000000e",
         "group": "group_virtual_sensors",
         "order": 2,
         "name": "ML Prediction Display",
         "label": "ML Prediction Badge",
-        "content": "{{msg.payload}}",
+        "format": "<div v-html=\"msg.payload\"></div>",
+        "templateScope": "local",
         "x": 760,
         "y": 140,
         "wires": []
@@ -1102,19 +1120,6 @@
         "layout": "row-spread",
         "x": 560,
         "y": 460,
-        "wires": []
-    },
-    {
-        "id": "widget_text_last_seen",
-        "type": "ui-markdown",
-        "z": "f00000000000000f",
-        "group": "group_system",
-        "order": 2,
-        "name": "Last Seen UI",
-        "label": "Last Seen Updates",
-        "content": "{{msg.payload}}",
-        "x": 560,
-        "y": 540,
         "wires": []
     }
 ]
