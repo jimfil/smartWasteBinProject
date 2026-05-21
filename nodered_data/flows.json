@@ -107,18 +107,73 @@
     "layout": "grid",
     "theme": "ui_theme_id",
     "breakpoints": [
-      {"name": "Default", "px": 0, "cols": 3},
-      {"name": "Tablet", "px": 576, "cols": 6},
-      {"name": "Small Desktop", "px": 768, "cols": 9},
-      {"name": "Desktop", "px": 1024, "cols": 12}
+      {
+        "name": "Default",
+        "px": 0,
+        "cols": 3
+      },
+      {
+        "name": "Tablet",
+        "px": 576,
+        "cols": 6
+      },
+      {
+        "name": "Small Desktop",
+        "px": 768,
+        "cols": 9
+      },
+      {
+        "name": "Desktop",
+        "px": 1024,
+        "cols": 12
+      }
     ],
     "order": 1
   },
-  {"id": "group_live_sensors", "type": "ui-group", "name": "Live Sensors", "page": "ui_page_ops", "width": "6", "height": "1", "order": 1, "showTitle": true, "groupType": "default"},
-  {"id": "group_virtual_sensors", "type": "ui-group", "name": "Virtual Sensors", "page": "ui_page_ops", "width": "6", "height": "1", "order": 2, "showTitle": true, "groupType": "default"},
-  {"id": "group_alerts", "type": "ui-group", "name": "Alerts", "page": "ui_page_ops", "width": "6", "height": "1", "order": 3, "showTitle": true, "groupType": "default"},
-  {"id": "group_system", "type": "ui-group", "name": "System Status", "page": "ui_page_ops", "width": "6", "height": "1", "order": 4, "showTitle": true, "groupType": "default"},
-
+  {
+    "id": "group_live_sensors",
+    "type": "ui-group",
+    "name": "Live Sensors",
+    "page": "ui_page_ops",
+    "width": "6",
+    "height": "1",
+    "order": 1,
+    "showTitle": true,
+    "groupType": "default"
+  },
+  {
+    "id": "group_virtual_sensors",
+    "type": "ui-group",
+    "name": "Virtual Sensors",
+    "page": "ui_page_ops",
+    "width": "6",
+    "height": "1",
+    "order": 2,
+    "showTitle": true,
+    "groupType": "default"
+  },
+  {
+    "id": "group_alerts",
+    "type": "ui-group",
+    "name": "Alerts",
+    "page": "ui_page_ops",
+    "width": "6",
+    "height": "1",
+    "order": 3,
+    "showTitle": true,
+    "groupType": "default"
+  },
+  {
+    "id": "group_system",
+    "type": "ui-group",
+    "name": "System Status",
+    "page": "ui_page_ops",
+    "width": "6",
+    "height": "1",
+    "order": 4,
+    "showTitle": true,
+    "groupType": "default"
+  },
   {
     "id": "mqtt_in_fill",
     "type": "mqtt in",
@@ -128,9 +183,17 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 140,
     "y": 120,
-    "wires": [["func_attach_ts", "widget_gauge_fill"]]
+    "wires": [
+      [
+        "func_attach_ts",
+        "widget_gauge_fill"
+      ]
+    ]
   },
   {
     "id": "mqtt_in_weight",
@@ -141,9 +204,17 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 130,
     "y": 200,
-    "wires": [["func_attach_ts", "widget_gauge_weight"]]
+    "wires": [
+      [
+        "func_attach_ts",
+        "widget_gauge_weight"
+      ]
+    ]
   },
   {
     "id": "mqtt_in_motion",
@@ -154,9 +225,17 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 130,
     "y": 280,
-    "wires": [["func_attach_ts", "func_motion_text"]]
+    "wires": [
+      [
+        "func_attach_ts",
+        "func_motion_text"
+      ]
+    ]
   },
   {
     "id": "func_attach_ts",
@@ -167,9 +246,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 390,
     "y": 200,
-    "wires": [["debug_sensor_mon"]]
+    "wires": [
+      [
+        "debug_sensor_mon"
+      ]
+    ]
   },
   {
     "id": "func_motion_text",
@@ -180,9 +266,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 390,
     "y": 300,
-    "wires": [["widget_text_motion"]]
+    "wires": [
+      [
+        "widget_text_motion"
+      ]
+    ]
   },
   {
     "id": "debug_sensor_mon",
@@ -201,7 +294,132 @@
     "y": 200,
     "wires": []
   },
-
+  {
+    "id": "widget_gauge_fill",
+    "type": "ui-gauge",
+    "z": "f00000000000000a",
+    "name": "Fill Level Gauge",
+    "group": "group_live_sensors",
+    "order": 1,
+    "value": "payload",
+    "valueType": "msg",
+    "width": 3,
+    "height": 3,
+    "gtype": "gauge-half",
+    "gstyle": "needle",
+    "title": "Fill Level",
+    "alwaysShowTitle": false,
+    "units": "%",
+    "icon": "",
+    "prefix": "",
+    "suffix": "",
+    "segments": [
+      {
+        "from": "0",
+        "color": "#a6e3a1",
+        "text": "",
+        "textType": "label"
+      },
+      {
+        "from": "50",
+        "color": "#f9e2af",
+        "text": "",
+        "textType": "label"
+      },
+      {
+        "from": "75",
+        "color": "#f38ba8",
+        "text": "",
+        "textType": "label"
+      }
+    ],
+    "min": 0,
+    "max": 100,
+    "sizeThickness": "",
+    "sizeGap": "",
+    "sizeKeyThickness": "",
+    "className": "",
+    "x": 390,
+    "y": 80,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "widget_gauge_weight",
+    "type": "ui-gauge",
+    "z": "f00000000000000a",
+    "name": "Weight Gauge",
+    "group": "group_live_sensors",
+    "order": 2,
+    "value": "payload",
+    "valueType": "msg",
+    "width": 3,
+    "height": 3,
+    "gtype": "gauge-half",
+    "gstyle": "needle",
+    "title": "Bin Weight",
+    "alwaysShowTitle": false,
+    "units": "g",
+    "icon": "",
+    "prefix": "",
+    "suffix": "",
+    "segments": [
+      {
+        "from": "0",
+        "color": "#a6e3a1",
+        "text": "",
+        "textType": "label"
+      },
+      {
+        "from": "2500",
+        "color": "#f9e2af",
+        "text": "",
+        "textType": "label"
+      },
+      {
+        "from": "4000",
+        "color": "#f38ba8",
+        "text": "",
+        "textType": "label"
+      }
+    ],
+    "min": 0,
+    "max": 5000,
+    "sizeThickness": "",
+    "sizeGap": "",
+    "sizeKeyThickness": "",
+    "className": "",
+    "x": 380,
+    "y": 140,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "widget_text_motion",
+    "type": "ui-text",
+    "z": "f00000000000000a",
+    "group": "group_live_sensors",
+    "order": 3,
+    "width": "",
+    "height": "",
+    "name": "Motion Indicator",
+    "label": "Motion State",
+    "format": "<b>{{msg.payload}}</b>",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": "",
+    "color": "#000000",
+    "wrapText": false,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 620,
+    "y": 300,
+    "wires": []
+  },
   {
     "id": "mqtt_in_b_fill",
     "type": "mqtt in",
@@ -211,9 +429,16 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 120,
     "y": 140,
-    "wires": [["func_replicate_intensity"]]
+    "wires": [
+      [
+        "func_replicate_intensity"
+      ]
+    ]
   },
   {
     "id": "mqtt_in_b_weight",
@@ -224,9 +449,16 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 130,
     "y": 220,
-    "wires": [["func_replicate_intensity"]]
+    "wires": [
+      [
+        "func_replicate_intensity"
+      ]
+    ]
   },
   {
     "id": "func_replicate_intensity",
@@ -237,9 +469,17 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 380,
     "y": 180,
-    "wires": [["widget_text_usage", "json_stringify_b"]]
+    "wires": [
+      [
+        "widget_text_usage",
+        "json_stringify_b"
+      ]
+    ]
   },
   {
     "id": "json_stringify_b",
@@ -251,7 +491,11 @@
     "pretty": false,
     "x": 610,
     "y": 220,
-    "wires": [["mqtt_out_b_intensity"]]
+    "wires": [
+      [
+        "mqtt_out_b_intensity"
+      ]
+    ]
   },
   {
     "id": "mqtt_out_b_intensity",
@@ -261,12 +505,40 @@
     "topic": "smartbin/nodered/usage_intensity",
     "qos": "1",
     "retain": "true",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 840,
     "y": 220,
     "wires": []
   },
-
+  {
+    "id": "widget_text_usage",
+    "type": "ui-text",
+    "z": "f00000000000000b",
+    "group": "group_virtual_sensors",
+    "order": 1,
+    "width": "",
+    "height": "",
+    "name": "Usage Intensity Display",
+    "label": "Usage Level",
+    "format": "<b>{{msg.payload.level}}</b> ({{msg.payload.fill_pct}}%)",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": "",
+    "color": "#000000",
+    "wrapText": false,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 650,
+    "y": 140,
+    "wires": []
+  },
   {
     "id": "mqtt_in_c_intensity",
     "type": "mqtt in",
@@ -276,9 +548,16 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 150,
     "y": 180,
-    "wires": [["json_parse_c"]]
+    "wires": [
+      [
+        "json_parse_c"
+      ]
+    ]
   },
   {
     "id": "json_parse_c",
@@ -290,7 +569,11 @@
     "pretty": false,
     "x": 330,
     "y": 180,
-    "wires": [["func_dedup_alerts"]]
+    "wires": [
+      [
+        "func_dedup_alerts"
+      ]
+    ]
   },
   {
     "id": "func_dedup_alerts",
@@ -301,9 +584,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 530,
     "y": 180,
-    "wires": [["switch_intensity_level"]]
+    "wires": [
+      [
+        "switch_intensity_level"
+      ]
+    ]
   },
   {
     "id": "switch_intensity_level",
@@ -313,15 +603,30 @@
     "property": "payload.level",
     "propertyType": "msg",
     "rules": [
-      {"t": "eq", "v": "CRITICAL", "vt": "str"},
-      {"t": "eq", "v": "HIGH", "vt": "str"}
+      {
+        "t": "eq",
+        "v": "CRITICAL",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "HIGH",
+        "vt": "str"
+      }
     ],
     "checkall": "true",
     "repair": false,
     "outputs": 2,
     "x": 730,
     "y": 180,
-    "wires": [["func_format_critical"], ["func_format_warning"]]
+    "wires": [
+      [
+        "func_format_critical"
+      ],
+      [
+        "func_format_warning"
+      ]
+    ]
   },
   {
     "id": "func_format_critical",
@@ -332,9 +637,18 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 930,
     "y": 120,
-    "wires": [["json_stringify_crit", "widget_crit_notification", "webhook_slack_placeholder"]]
+    "wires": [
+      [
+        "json_stringify_crit",
+        "widget_crit_notification",
+        "webhook_slack_placeholder"
+      ]
+    ]
   },
   {
     "id": "func_format_warning",
@@ -345,9 +659,17 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 930,
     "y": 240,
-    "wires": [["json_stringify_warn", "debug_warning_log"]]
+    "wires": [
+      [
+        "json_stringify_warn",
+        "debug_warning_log"
+      ]
+    ]
   },
   {
     "id": "json_stringify_crit",
@@ -358,8 +680,12 @@
     "action": "str",
     "pretty": false,
     "x": 1130,
-    "y": 90,
-    "wires": [["mqtt_out_crit_alert"]]
+    "y": 80,
+    "wires": [
+      [
+        "mqtt_out_crit_alert"
+      ]
+    ]
   },
   {
     "id": "mqtt_out_crit_alert",
@@ -369,9 +695,14 @@
     "topic": "smartbin/alerts/critical",
     "qos": "1",
     "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 1350,
-    "y": 90,
+    "y": 80,
     "wires": []
   },
   {
@@ -384,7 +715,11 @@
     "pretty": false,
     "x": 1140,
     "y": 280,
-    "wires": [["mqtt_out_warn_alert"]]
+    "wires": [
+      [
+        "mqtt_out_warn_alert"
+      ]
+    ]
   },
   {
     "id": "mqtt_out_warn_alert",
@@ -394,6 +729,11 @@
     "topic": "smartbin/alerts/warning",
     "qos": "1",
     "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 1350,
     "y": 280,
@@ -417,7 +757,9 @@
     "headers": [],
     "x": 1160,
     "y": 160,
-    "wires": [[]]
+    "wires": [
+      []
+    ]
   },
   {
     "id": "widget_crit_notification",
@@ -425,12 +767,23 @@
     "z": "f00000000000000c",
     "ui": "ui_base_id",
     "position": "top right",
-    "displayTime": "10",
+    "colorDefault": false,
     "color": "#ea5353",
+    "displayTime": "10",
+    "showCountdown": false,
+    "outputs": 1,
+    "allowDismiss": false,
+    "dismissText": "",
+    "allowConfirm": false,
+    "confirmText": "",
+    "raw": false,
+    "className": "",
     "name": "Dashboard Alert",
     "x": 1160,
     "y": 120,
-    "wires": []
+    "wires": [
+      []
+    ]
   },
   {
     "id": "debug_warning_log",
@@ -449,7 +802,6 @@
     "y": 230,
     "wires": []
   },
-
   {
     "id": "mqtt_in_wildcard",
     "type": "mqtt in",
@@ -459,9 +811,17 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 130,
     "y": 200,
-    "wires": [["switch_router", "func_circular_buffer"]]
+    "wires": [
+      [
+        "switch_router",
+        "func_circular_buffer"
+      ]
+    ]
   },
   {
     "id": "switch_router",
@@ -471,16 +831,42 @@
     "property": "topic",
     "propertyType": "msg",
     "rules": [
-      {"t": "regex", "v": "^smartbin/virtual/", "vt": "str", "case": false},
-      {"t": "regex", "v": "^smartbin/sensor/", "vt": "str", "case": false},
-      {"t": "regex", "v": "^smartbin/alerts/", "vt": "str", "case": false}
+      {
+        "t": "regex",
+        "v": "^smartbin/virtual/",
+        "vt": "str",
+        "case": false
+      },
+      {
+        "t": "regex",
+        "v": "^smartbin/sensor/",
+        "vt": "str",
+        "case": false
+      },
+      {
+        "t": "regex",
+        "v": "^smartbin/alerts/",
+        "vt": "str",
+        "case": false
+      }
     ],
     "checkall": "true",
     "repair": false,
     "outputs": 3,
     "x": 360,
     "y": 140,
-    "wires": [["mqtt_out_virtual_log"], ["mqtt_out_sensor_log"], ["mqtt_out_alert_log", "func_trigger_alert_counter"]]
+    "wires": [
+      [
+        "mqtt_out_virtual_log"
+      ],
+      [
+        "mqtt_out_sensor_log"
+      ],
+      [
+        "mqtt_out_alert_log",
+        "func_trigger_alert_counter"
+      ]
+    ]
   },
   {
     "id": "mqtt_out_virtual_log",
@@ -490,6 +876,11 @@
     "topic": "smartbin/nodered/virtual_log",
     "qos": "1",
     "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 620,
     "y": 80,
@@ -503,6 +894,11 @@
     "topic": "smartbin/nodered/sensor_log",
     "qos": "1",
     "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 620,
     "y": 140,
@@ -516,6 +912,11 @@
     "topic": "smartbin/nodered/alert_log",
     "qos": "1",
     "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 610,
     "y": 200,
@@ -530,9 +931,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 630,
     "y": 260,
-    "wires": [["widget_text_alert_count"]]
+    "wires": [
+      [
+        "widget_text_alert_count"
+      ]
+    ]
   },
   {
     "id": "func_circular_buffer",
@@ -543,9 +951,17 @@
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 370,
     "y": 320,
-    "wires": [[], ["widget_text_alert_history"]]
+    "wires": [
+      [],
+      [
+        "widget_text_alert_history"
+      ]
+    ]
   },
   {
     "id": "http_in_recent",
@@ -555,10 +971,15 @@
     "url": "/nodered/api/recent-events",
     "method": "get",
     "upload": false,
+    "skipBodyParsing": false,
     "swaggerDoc": "",
     "x": 140,
     "y": 420,
-    "wires": [["func_get_buffer"]]
+    "wires": [
+      [
+        "func_get_buffer"
+      ]
+    ]
   },
   {
     "id": "func_get_buffer",
@@ -569,9 +990,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 380,
     "y": 420,
-    "wires": [["http_response_recent"]]
+    "wires": [
+      [
+        "http_response_recent"
+      ]
+    ]
   },
   {
     "id": "http_response_recent",
@@ -579,12 +1007,54 @@
     "z": "f00000000000000d",
     "name": "Send Response",
     "statusCode": "200",
-    "headers": {"content-type": "application/json"},
+    "headers": {
+      "content-type": "application/json"
+    },
     "x": 600,
     "y": 420,
     "wires": []
   },
-
+  {
+    "id": "widget_text_alert_history",
+    "type": "ui-markdown",
+    "z": "f00000000000000d",
+    "group": "group_alerts",
+    "name": "Alert History",
+    "order": 1,
+    "width": "",
+    "height": "",
+    "content": "{{msg.payload}}",
+    "className": "",
+    "x": 620,
+    "y": 350,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "widget_text_alert_count",
+    "type": "ui-text",
+    "z": "f00000000000000d",
+    "group": "group_alerts",
+    "order": 2,
+    "width": "",
+    "height": "",
+    "name": "Alert Count UI",
+    "label": "Total Active Alerts",
+    "format": "<span style='color: #f38ba8; font-weight: bold;'>{{msg.payload}}</span>",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": "",
+    "color": "#000000",
+    "wrapText": false,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 860,
+    "y": 260,
+    "wires": []
+  },
   {
     "id": "mqtt_in_ml",
     "type": "mqtt in",
@@ -594,9 +1064,16 @@
     "qos": "1",
     "datatype": "auto-detect",
     "broker": "broker_config_node",
+    "nl": false,
+    "rap": false,
+    "inputs": 0,
     "x": 130,
     "y": 180,
-    "wires": [["json_parse_ml"]]
+    "wires": [
+      [
+        "json_parse_ml"
+      ]
+    ]
   },
   {
     "id": "json_parse_ml",
@@ -608,7 +1085,12 @@
     "pretty": false,
     "x": 320,
     "y": 180,
-    "wires": [["func_ml_ui_format", "func_ml_display_format"]]
+    "wires": [
+      [
+        "func_ml_ui_format",
+        "func_ml_display_format"
+      ]
+    ]
   },
   {
     "id": "func_ml_ui_format",
@@ -619,9 +1101,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
-    "x": 350,
-    "y": 140,
-    "wires": [["template_ml_card"]]
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 100,
+    "wires": [
+      [
+        "template_ml_card"
+      ]
+    ]
   },
   {
     "id": "template_ml_card",
@@ -634,9 +1123,13 @@
     "syntax": "mustache",
     "template": "<div style=\"background-color: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 12px; font-family: sans-serif;\"><h4 style=\"margin: 0 0 8px 0; color: #cdd6f4;\">ML Busy Status Prediction</h4><div style=\"display: flex; justify-content: space-between; align-items: center;\"><span style=\"font-weight: 600; font-size: 1.1em; color: {{payload.text_color}};\">{{payload.prediction_display}}</span><span style=\"background-color: #89b4fa; color: #11111b; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;\">{{payload.confidence_display}} Confidence</span></div><div style=\"margin-top: 8px; font-size: 0.75em; color: #a6adc8;\">Predicted Hour: {{payload.predicted_hour}}:00<br/>Features: {{payload.features_used.day_of_week}}, Hour {{payload.features_used.hour}}</div></div>",
     "output": "str",
-    "x": 540,
-    "y": 140,
-    "wires": [["widget_text_ml"]]
+    "x": 640,
+    "y": 100,
+    "wires": [
+      [
+        "widget_text_ml"
+      ]
+    ]
   },
   {
     "id": "func_ml_display_format",
@@ -647,9 +1140,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 520,
     "y": 240,
-    "wires": [["json_stringify_ml_display"]]
+    "wires": [
+      [
+        "json_stringify_ml_display"
+      ]
+    ]
   },
   {
     "id": "json_stringify_ml_display",
@@ -661,7 +1161,11 @@
     "pretty": false,
     "x": 720,
     "y": 240,
-    "wires": [["mqtt_out_ml_display"]]
+    "wires": [
+      [
+        "mqtt_out_ml_display"
+      ]
+    ]
   },
   {
     "id": "mqtt_out_ml_display",
@@ -671,18 +1175,41 @@
     "topic": "smartbin/nodered/ml_display",
     "qos": "1",
     "retain": "true",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 930,
     "y": 240,
     "wires": []
   },
-
+  {
+    "id": "widget_text_ml",
+    "type": "ui-template",
+    "z": "f00000000000000e",
+    "group": "group_virtual_sensors",
+    "name": "ML Prediction Display",
+    "order": 2,
+    "format": "<div v-html=\"msg.payload\"></div>",
+    "templateScope": "local",
+    "x": 860,
+    "y": 100,
+    "wires": [
+      []
+    ]
+  },
   {
     "id": "inject_heartbeat",
     "type": "inject",
     "z": "f00000000000000f",
     "name": "30s Heartbeat",
-    "props": [{"p": "payload"}],
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
     "repeat": "30",
     "crontab": "",
     "once": true,
@@ -692,7 +1219,11 @@
     "payloadType": "json",
     "x": 140,
     "y": 380,
-    "wires": [["func_format_heartbeat"]]
+    "wires": [
+      [
+        "func_format_heartbeat"
+      ]
+    ]
   },
   {
     "id": "func_format_heartbeat",
@@ -703,9 +1234,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 360,
     "y": 380,
-    "wires": [["json_stringify_hb"]]
+    "wires": [
+      [
+        "json_stringify_hb"
+      ]
+    ]
   },
   {
     "id": "json_stringify_hb",
@@ -717,7 +1255,11 @@
     "pretty": false,
     "x": 550,
     "y": 380,
-    "wires": [["mqtt_out_heartbeat"]]
+    "wires": [
+      [
+        "mqtt_out_heartbeat"
+      ]
+    ]
   },
   {
     "id": "mqtt_out_heartbeat",
@@ -727,6 +1269,11 @@
     "topic": "smartbin/nodered/heartbeat",
     "qos": "1",
     "retain": "true",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
     "broker": "broker_config_node",
     "x": 740,
     "y": 380,
@@ -737,7 +1284,11 @@
     "type": "inject",
     "z": "f00000000000000f",
     "name": "1s Tick",
-    "props": [{"p": "payload"}],
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
     "repeat": "1",
     "crontab": "",
     "once": true,
@@ -747,7 +1298,11 @@
     "payloadType": "date",
     "x": 110,
     "y": 460,
-    "wires": [["func_uptime"]]
+    "wires": [
+      [
+        "func_uptime"
+      ]
+    ]
   },
   {
     "id": "func_uptime",
@@ -758,131 +1313,16 @@
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
     "x": 340,
     "y": 460,
-    "wires": [["widget_text_uptime"]]
-  },
-
-  {
-    "id": "widget_gauge_fill",
-    "type": "ui-gauge",
-    "z": "f00000000000000a",
-    "name": "Fill Level Gauge",
-    "group": "group_live_sensors",
-    "order": 1,
-    "value": "payload",
-    "valueType": "msg",
-    "width": 3,
-    "height": 3,
-    "gtype": "gauge-half",
-    "gstyle": "needle",
-    "title": "Fill Level",
-    "units": "%",
-    "min": 0,
-    "max": 100,
-    "segments": [
-      {"from": 0, "color": "#a6e3a1"},
-      {"from": 50, "color": "#f9e2af"},
-      {"from": 75, "color": "#f38ba8"}
-    ],
-    "x": 390,
-    "y": 80,
-    "wires": []
-  },
-  {
-    "id": "widget_gauge_weight",
-    "type": "ui-gauge",
-    "z": "f00000000000000a",
-    "name": "Weight Gauge",
-    "group": "group_live_sensors",
-    "order": 2,
-    "value": "payload",
-    "valueType": "msg",
-    "width": 3,
-    "height": 3,
-    "gtype": "gauge-half",
-    "gstyle": "needle",
-    "title": "Bin Weight",
-    "units": "g",
-    "min": 0,
-    "max": 5000,
-    "segments": [
-      {"from": 0, "color": "#a6e3a1"},
-      {"from": 2500, "color": "#f9e2af"},
-      {"from": 4000, "color": "#f38ba8"}
-    ],
-    "x": 380,
-    "y": 140,
-    "wires": []
-  },
-  {
-    "id": "widget_text_motion",
-    "type": "ui-text",
-    "z": "f00000000000000a",
-    "group": "group_live_sensors",
-    "order": 3,
-    "name": "Motion Indicator",
-    "label": "Motion State",
-    "format": "<b>{{msg.payload}}</b>",
-    "layout": "row-spread",
-    "x": 620,
-    "y": 300,
-    "wires": []
-  },
-  {
-    "id": "widget_text_usage",
-    "type": "ui-text",
-    "z": "f00000000000000b",
-    "group": "group_virtual_sensors",
-    "order": 1,
-    "name": "Usage Intensity Display",
-    "label": "Usage Level",
-    "format": "<b>{{msg.payload.level}}</b> ({{msg.payload.fill_pct}}%)",
-    "layout": "row-spread",
-    "x": 650,
-    "y": 140,
-    "wires": []
-  },
-  {
-    "id": "widget_text_ml",
-    "type": "ui-template",
-    "z": "f00000000000000e",
-    "group": "group_virtual_sensors",
-    "order": 2,
-    "name": "ML Prediction Display",
-    "label": "ML Prediction Badge",
-    "format": "<div v-html=\"msg.payload\"></div>",
-    "templateScope": "local",
-    "x": 760,
-    "y": 140,
-    "wires": []
-  },
-  {
-    "id": "widget_text_alert_history",
-    "type": "ui-markdown",
-    "z": "f00000000000000d",
-    "group": "group_alerts",
-    "order": 1,
-    "name": "Alert History",
-    "label": "Alert History List",
-    "content": "{{msg.payload}}",
-    "x": 620,
-    "y": 350,
-    "wires": []
-  },
-  {
-    "id": "widget_text_alert_count",
-    "type": "ui-text",
-    "z": "f00000000000000d",
-    "group": "group_alerts",
-    "order": 2,
-    "name": "Alert Count UI",
-    "label": "Total Active Alerts",
-    "format": "<span style='color: #f38ba8; font-weight: bold;'>{{msg.payload}}</span>",
-    "layout": "row-spread",
-    "x": 860,
-    "y": 260,
-    "wires": []
+    "wires": [
+      [
+        "widget_text_uptime"
+      ]
+    ]
   },
   {
     "id": "widget_text_uptime",
@@ -890,12 +1330,30 @@
     "z": "f00000000000000f",
     "group": "group_system",
     "order": 1,
+    "width": "",
+    "height": "",
     "name": "Uptime Display",
     "label": "Uptime",
     "format": "<code>{{msg.payload}}</code>",
     "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": "",
+    "color": "#000000",
+    "wrapText": false,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
     "x": 560,
     "y": 460,
     "wires": []
+  },
+  {
+    "id": "e47ff8625f08df6e",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@flowfuse/node-red-dashboard": "1.30.2"
+    }
   }
 ]
