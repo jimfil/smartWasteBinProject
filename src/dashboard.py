@@ -54,7 +54,7 @@ def on_message(client, userdata, msg):
         topic = msg.topic
         
         # 1. Handle Status messages
-        if "status" in topic:
+        if "status" in topic or "heartbeat" in topic:
             time_str = datetime.now().strftime('%H:%M:%S')
             print(f"{COLORS['BLUE']}[{time_str}]{COLORS['RESET']} "
                   f"{COLORS['YELLOW']}[Status Update]{COLORS['RESET']} {topic}: {COLORS['BOLD']}{payload}{COLORS['RESET']}")

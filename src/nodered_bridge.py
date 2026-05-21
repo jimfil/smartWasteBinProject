@@ -110,6 +110,21 @@ def main():
     signal.signal(signal.SIGINT, handle_sigint)
     signal.signal(signal.SIGTERM, handle_sigint)
     
+    # Automatic bootstrap logic for fresh clones
+    nodered_data_dir = os.path.join(BASE_DIR, "..", "nodered_data")
+    nodered_flows_path = os.path.join(nodered_data_dir, "flows.json")
+    src_flows_path = os.path.join(BASE_DIR, "flows.json")
+    
+    if os.path.exists(src_flows_path) and not os.path.exists(nodered_flows_path):
+        try:
+            print(f"[Node-RED Bridge] Bootstrapping {nodered_flows_path} from {src_flows_path}...", flush=True)
+            os.makedirs(nodered_data_dir, exist_ok=True)
+            import shutil
+            shutil.copy(src_flows_path, nodered_flows_path)
+            print("[Node-RED Bridge] Bootstrapped Node-RED flows successfully!", flush=True)
+        except Exception as e:
+            print(f"[Node-RED Bridge] Failed to bootstrap flows: {e}", file=sys.stderr, flush=True)
+
     os.makedirs(DATA_DIR, exist_ok=True)
     
     # Setup MQTT Client
