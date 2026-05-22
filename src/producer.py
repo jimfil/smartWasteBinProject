@@ -91,6 +91,19 @@ def publish_discovery(client, bin_id, sensor_id):
     }
     client.publish(f"homeassistant/sensor/{bin_id}_{sensor_id}_motion_count/config", json.dumps(count_config), retain=True)
 
+    ack_button_config = {
+        "name": f"Acknowledge Alert {bin_id}",
+        "command_topic": "smartbin/nodered/alert_ack",
+        "payload_press": json.dumps({"bin_id": bin_id, "level": "ACK", "operator": "Home Assistant"}),
+        "icon": "mdi:check-circle-outline",
+        "unique_id": f"{bin_id}_ack_alert",
+        "device": {
+            "identifiers": [bin_id],
+            "name": f"Smart Wastebin {bin_id}"
+        }
+    }
+    client.publish(f"homeassistant/button/{bin_id}_ack_alert/config", json.dumps(ack_button_config), retain=True)
+
 
 @click.command()
 @click.option("--sensor-id", default=DEFAULT_SENSOR_ID, help="URN of the sensor")
