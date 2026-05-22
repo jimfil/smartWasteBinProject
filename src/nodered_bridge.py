@@ -55,7 +55,10 @@ def on_message(client, userdata, msg):
                 "topic": topic,
                 "alert": alert_data,
                 "timestamp": timestamp,
-                "acknowledged": False
+                "acknowledged": False,
+                "acknowledged_at": None,
+                "solved": False,
+                "solved_at": None
             }
             
             # Append to nodered_alerts.log
@@ -94,7 +97,7 @@ def on_message(client, userdata, msg):
                             if (alert_payload.get("bin_id") == ack_data.get("bin_id") and 
                                     alert_payload.get("level") == ack_data.get("level")):
                                 record["acknowledged"] = True
-                                record["ack_timestamp"] = timestamp
+                                record["acknowledged_at"] = timestamp
                             updated_lines.append(json.dumps(record) + "\n")
                         except Exception:
                             updated_lines.append(line)
@@ -104,6 +107,38 @@ def on_message(client, userdata, msg):
                     
         except Exception as e:
             print(f"[Node-RED Bridge] Error acknowledging alert: {e}", file=sys.stderr, flush=True)
+
+    # 3. Solved State handler (listening to usage intensity changes)
+    elif topic == "smartbin/nodered/usage_intensity":
+        try:
+            usage_data = json.loads(payload_str)
+            fill_pct = usage_data.get("fill_pct", 0)
+            
+            if fill_pct < 75:
+                if os.path.exists(ALERTS_LOG):
+                    updated_lines = []
+                    with open(ALERTS_LOG, "r", encoding="utf-8") as f:
+                        for line in f:
+                            if not line.strip():
+                                continue
+                            try:
+                                record = json.loads(line)
+                                bin_id = usage_data.get("bin_id", "bin-01")
+                                alert_payload = record.get("alert", {})
+                                
+                                if alert_payload.get("bin_id") == bin_id and record.get("solved", False) is False:
+                                    record["solved"] = True
+                                    record["solved_at"] = timestamp
+                                    print(f"[Node-RED Bridge] Alert for {bin_id} marked as solved.", flush=True)
+                                    
+                                updated_lines.append(json.dumps(record) + "\n")
+                            except Exception:
+                                updated_lines.append(line)
+                    
+                    with open(ALERTS_LOG, "w", encoding="utf-8") as f:
+                        f.writelines(updated_lines)
+        except Exception as e:
+            print(f"[Node-RED Bridge] Error processing usage intensity for solve state: {e}", file=sys.stderr, flush=True)
 
 def main():
     global stop_flag
