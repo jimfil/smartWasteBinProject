@@ -1,0 +1,166 @@
+\documentclass[acmsmall,screen,nonacm]{acmart}
+\usepackage[greek,english]{babel}
+\usepackage{float}
+\usepackage{alphabeta} 
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{url}
+
+\babelfont[greek]{rm}{Noto Serif}
+\babelfont[greek]{sf}{Noto Sans}
+\sloppy
+
+\title{Smart Waste Bin}
+\subtitle{Ολοκληρωμένο Σύστημα IoT για την Έξυπνη Διαχείριση Απορριμμάτων \\ Προηγμένες Τεχνικές Προγραμματισμού (CK801)}
+
+\author{Αθανάσιος Μήτσης \& Βασίλειος Ρούσσης \& Δημήτριος Φιλόπουλος}
+\affiliation{
+	\institution{\newline Τμήμα ΗΜ\&ΤΥ, Πανεπιστήμιο Πατρών}
+	\country{Ελλάδα}
+}
+\captionsetup[table]{position=bottom}
+
+\renewcommand{\shortauthors}{Α.Μ, Β.Ρ, Δ.Φ.}
+
+\begin{document}
+	
+	\begin{abstract}
+		\textbf{Περίληψη:} Στην παρούσα εργασία παρουσιάζεται η σχεδίαση, υλοποίηση και αξιολόγηση ενός ολοκληρωμένου, κατανεμημένου συστήματος Διαδικτύου των Πραγμάτων (IoT) για τη μετατροπή ενός κοινού κάδου απορριμμάτων σε έξυπνη, αυτοματοποιημένη συσκευή (Smart Waste Bin). Το σύστημα βασίζεται σε έναν επεξεργαστή Raspberry Pi εξοπλισμένο με αισθητήρα κίνησης PIR (HC-SR501) για την ανίχνευση ρίψης απορριμμάτων. Ο ψηφιακός αγωγός επεξεργασίας φιλτράρει το θόρυβο σε πραγματικό χρόνο και διοχετεύει τα δεδομένα μέσω του πρωτοκόλλου MQTT (Eclipse Mosquitto). 
+		
+		Η μοντελοποίηση των δεδομένων πραγματοποιείται με χρήση σημασιολογικού ιστού (JSON-LD) βασισμένου στα πρότυπα SOSA και SAREF. Παράλληλα, αναπτύχθηκε μια διεπαφή REST API με Flask-RESTx για τη σύγχρονη προσπέλαση των δεδομένων, ενώ υλοποιήθηκαν δύο εικονικοί αισθητήρες (virtual sensors): ένας βασισμένος σε ντετερμινιστικούς κανόνες για τον υπολογισμό της έντασης χρήσης, και ένας βασισμένος σε μηχανική μάθηση (Random Forest Classifier) για την πρόβλεψη μελλοντικής δραστηριότητας. Τέλος, το σύστημα ενσωματώνει τη low-code πλατφόρμα Node-RED για την ενορχήστρωση ροών, την αποστολή ειδοποιήσεων κρίσιμης κατάστασης και την οπτικοποίηση των δεδομένων σε ένα σύγχρονο Operator Dashboard.
+	\end{abstract}
+	
+	\maketitle
+	
+	\section{Εισαγωγή}
+	Η ραγδαία αστικοποίηση και η ανάγκη για βιώσιμες πόλεις καθιστούν επιτακτική την αναβάθμιση των παραδοσιακών υποδομών διαχείρισης απορριμμάτων. Η παρούσα εργασία, η οποία αναπτύχθηκε στο πλαίσιο του μαθήματος \emph{Προηγμένες Τεχνικές Προγραμματισμού (CK801)}, εστιάζει στη δημιουργία ενός ολοκληρωμένου, παραγωγικού συστήματος IoT με την ονομασία \textbf{Smart Waste Bin}.
+	
+	Το σύστημα υλοποιεί έναν πλήρη αγωγό επεξεργασίας δεδομένων, ξεκινώντας από το χαμηλό επίπεδο της διεπαφής με το υλικό (hardware interface) και φτάνοντας έως το υψηλό επίπεδο των σημασιολογικών δεδομένων, των RESTful υπηρεσιών, των αλγορίθμων πρόβλεψης και των low-code διεπαφών χρήστη. Η ανάπτυξη οργανώθηκε σε 10 διακριτά ορόσημα (Milestones), τα οποία κάλυψαν όλο το φάσμα της σύγχρονης μηχανικής λογισμικού για συστήματα IoT: από τη διαχείριση νημάτων και των παράλληλων ουρών, την κοντεϊνεροποίηση (containerization) μέσω Docker, έως τη σημασιολογική μοντελοποίηση, το πρωτόκολλο MQTT, την εκπαίδευση μοντέλων Random Forest και την οπτικοποίηση ροών σε Node-RED.
+	
+	\section{Αρχιτεκτονική και Τοπολογία Συστήματος}
+	Για την εξασφάλιση της επεκτασιμότητας και της ανεξαρτησίας των επιμέρους στοιχείων, το σύστημα σχεδιάστηκε με βάση μια \textbf{κατανεμημένη αρχιτεκτονική δημοσίευσης/εγγραφής (Publish/Subscribe)} με τη χρήση του πρωτοκόλλου MQTT. Η διαχείριση και η εκτέλεση των υπηρεσιών πραγματοποιείται μέσω της πλατφόρμας Docker Compose, επιτρέποντας την απομόνωση των διεργασιών και την εύκολη μεταφερσιμότητα σε οποιαδήποτε embedded ή edge συσκευή.
+	
+	\subsection{Ανάλυση Υπηρεσιών Docker}
+	Η τοπολογία του συστήματος αποτελείται από τις εξής βασικές υπηρεσίες, όπως ορίζονται στο αρχείο \texttt{docker-compose.yml}:
+	
+	\begin{enumerate}
+		\item \textbf{MQTT Broker (broker):} Χρησιμοποιεί την εικόνα \texttt{eclipse-mosquitto:latest} ως το κεντρικό νευρικό σύστημα διανομής μηνυμάτων.
+		\item \textbf{MQTT Producer (producer):} Συνδέεται απευθείας με τις θύρες GPIO του Raspberry Pi (μέσω pass-through των συσκευών \texttt{/dev/gpiomem}), λαμβάνει τις μετρήσεις του αισθητήρα, τις φιλτράρει και τις δημοσιεύει στο broker.
+		\item \textbf{MQTT Consumer (consumer):} Εγγράφεται στα κατάλληλα θέματα (topics) και καταγράφει τα γεγονότα σε δομημένη μορφή JSONL στο αρχείο \texttt{motion\_events.log}.
+		\item \textbf{MQTT Archiver (archiver):} Αναλαμβάνει τη μόνιμη αρχειοθέτηση όλων των μηνυμάτων της τοπολογίας \texttt{smartbin/\#} στο αρχείο \texttt{archive.log}.
+		\item \textbf{REST API (api):} Μια Flask εφαρμογή που εκθέτει REST endpoints για τη σύγχρονη άντληση της κατάστασης του συστήματος και των αισθητήρων.
+		\item \textbf{Virtual Sensor Rules \& ML (virtual-sensor-rules / virtual-sensor-ml):} Δύο ανεξάρτητες υπηρεσίες που επεξεργάζονται τα πρωτογενή γεγονότα κίνησης και παράγουν υψηλότερου επιπέδου πληροφορία (ένταση χρήσης και προβλέψεις).
+		\item \textbf{Home Assistant \& Node-RED (homeassistant / nodered):} Οι πλατφόρμες οπτικοποίησης, ελέγχου και low-code αυτοματισμών.
+	\end{enumerate}
+	
+	\section{Ενσωμάτωση Αισθητήρα και Φιλτράρισμα Ψηφιακού Σήματος}
+	Στην καρδιά του συστήματος βρίσκεται ο αισθητήρας κίνησης υπερύθρων \textbf{HC-SR501 PIR}, ο οποίος συνδέεται στη θύρα GPIO του Raspberry Pi (προεπιλογή: Pin 4). Η ανάγνωση και επεξεργασία του σήματος υλοποιείται μέσω της βιβλιοθήκης \texttt{pirlib}, η οποία χωρίζεται σε δύο βασικά δομικά στοιχεία: τον δειγματολήπτη (\texttt{PirSampler}) και τον ερμηνευτή σήματος (\texttt{PirInterpreter}).
+	
+	\subsection{Αλγόριθμος Ψηφιακού Φιλτραρίσματος (Noise Filtering \& Debouncing)}
+	Οι αισθητήρες PIR παρουσιάζουν συχνά ηλεκτρικό θόρυβο ή στιγμιαίες ψευδείς μεταβολές σήματος. Για την αποφυγή λανθασμένων καταγραφών, ο \texttt{PirInterpreter} εφαρμόζει δύο διαδοχικά ψηφιακά φίλτρα:
+	
+	\begin{enumerate}
+		\item \textbf{Ελάχιστος Χρόνος Ενεργοποίησης (Minimum High Duration):} Το ψηφιακό σήμα εισόδου πρέπει να παραμείνει σε κατάσταση HIGH ($V_{out} \approx 3.3\text{V}$) συνεχόμενα για ένα ελάχιστο χρονικό διάστημα $T_{high}$ (π.χ. $T_{high} = 0.5$ δευτερόλεπτα) προκειμένου να θεωρηθεί ως έγκυρο γεγονός κίνησης:
+		\begin{equation}
+			\Delta t_{high} \ge T_{high}
+		\end{equation}
+		\item \textbf{Περίοδος Αποκατάστασης (Cooldown/Debounce Period):} Μετά την επιτυχή ανίχνευση ενός γεγονότος, επιβάλλεται μια περίοδος αποχής $T_{cool}$ (π.χ. $T_{cool} = 2.0$ δευτερόλεπτα) κατά την οποία οποιαδήποτε νέα ενεργοποίηση αγνοείται. Αυτό αποτρέπει την πολλαπλή καταγραφή ενός και μόνο γεγονότος ρίψης απορριμμάτων:
+		\begin{equation}
+			t_{event, k} - t_{event, k-1} > T_{cool}
+		\end{equation}
+	\end{enumerate}
+	
+	\section{Σημασιολογική Μοντελοποίηση και MQTT Τοπολογία}
+	Για να καταστούν τα δεδομένα του συστήματος αυτο-περιγραφόμενα και διαλειτουργικά, εφαρμόστηκαν τεχνολογίες \textbf{Σημασιολογικού Ιστού (Semantic Web)}. 
+	
+	\subsection{Μοντελοποίηση JSON-LD}
+	Κάθε γεγονός κίνησης που παράγεται από τον \texttt{producer.py} περιλαμβάνει ενσωματωμένο πλαίσιο \texttt{@context} και τύπο \texttt{@type}, συνδέοντας τα δεδομένα με διεθνώς αναγνωρισμένες οντολογίες:
+	\begin{itemize}
+		\item \textbf{SOSA (Sensor, Observation, Sample, and Actuation):} Χρησιμοποιείται για την αναπαράσταση των παρατηρήσεων (\texttt{sosa:Observation}) και του αισθητήρα (\texttt{sosa:Sensor}).
+		\item \textbf{SAREF (Smart Applications REference Ontology):} Μοντελοποιεί τον ίδιο τον κάδο ως έξυπνη συσκευή (\texttt{saref:Appliance}).
+		\item \textbf{BOT (Building Topology Ontology):} Περιγράφει το φυσικό περιβάλλον εγκατάστασης (\texttt{bot:Space}).
+	\end{itemize}
+	
+	Τα γεγονότα εμπλουτίζονται με μοναδικούς αναγνωριστικούς κωδικούς URN (π.χ. \texttt{urn:dev:team05:pir-01} για τον αισθητήρα, \texttt{urn:wastebin:bin-01} για τον κάδο και \texttt{urn:env:kypes-02} για το δωμάτιο) και περιλαμβάνουν μετρικές όπως το χρόνο παραγωγής (\texttt{event\_time}), το χρόνο λήψης (\texttt{ingest\_time}) και την καθυστέρηση του αγωγού (\texttt{pipeline\_latency\_ms}).
+	
+	\subsection{MQTT Τοπολογία Θεμάτων (Topic Hierarchy)}
+	Ορίστηκε μια αυστηρή ιεραρχία θεμάτων για τη διευκόλυνση της δρομολόγησης και του φιλτραρίσματος των μηνυμάτων:
+	\begin{itemize}
+		\item \texttt{smartbin/bin-01/pir-01/events}: Δημοσίευση των σημασιολογικών JSON-LD γεγονότων κίνησης.
+		\item \texttt{smartbin/bin-01/pir-01/motion}: Απλό σήμα κατάστασης (\texttt{detected}/\texttt{clear}) για ενσωμάτωση στο Home Assistant.
+		\item \texttt{smartbin/bin-01/status}: Κατάσταση σύνδεσης του κάδου (\texttt{active}/\texttt{offline}) με χρήση της λειτουργίας \emph{Last Will and Testament (LWT)} του MQTT.
+		\item \texttt{smartbin/bin-01/usage\_intensity}: Δημοσίευση της έντασης χρήσης από τον κανόνα του εικονικού αισθητήρα.
+		\item \texttt{smartbin/bin-01/usage\_prediction}: Δημοσίευση της πρόβλεψης του ML μοντέλου.
+	\end{itemize}
+	
+	\section{Flask REST API και Formal Specifications}
+	Η εφαρμογή REST API (\texttt{src/api.py}) αναπτύχθηκε με χρήση του framework \textbf{Flask-RESTx}. Παρέχει μια πλήρηSwagger διεπαφή που επιτρέπει τη σύγχρονη ανάγνωση της κατάστασης των κάδων, των αισθητήρων και των ιστορικών γεγονότων. 
+	
+	Επιπλέον, το API λειτουργεί ως αμφίδρομη γέφυρα με το MQTT, προσφέροντας endpoint (\texttt{/mqtt/publish}) για τη δημοσίευση μηνυμάτων στο broker μέσω HTTP POST, καθώς και endpoints για την ανάγνωση των τελευταίων καταγεγραμμένων τιμών κάθε θέματος. Η αρχιτεκτονική του συστήματος τεκμηριώνεται πλήρως μέσω δύο τυποποιημένων προδιαγραφών:
+	\begin{itemize}
+		\item \textbf{OpenAPI Specification (Swagger):} Για την περιγραφή της σύγχρονης pull-based HTTP διεπαφής.
+		\item \textbf{AsyncAPI Specification:} Για την επίσημη τεκμηρίωση της push-based MQTT αρχιτεκτονικής, των θεμάτων και των σχημάτων (schemas) των μηνυμάτων.
+	\end{itemize}
+	
+	\section{Εικονικοί Αισθητήρες (Virtual Sensors)}
+	Ένα από τα πιο προηγμένα χαρακτηριστικά του συστήματος είναι η υλοποίηση \textbf{Εικονικών Αισθητήρων (Virtual Sensors)}, οι οποίοι συνδυάζουν πρωτογενείς μετρήσεις για την παραγωγή πληροφορίας υψηλότερης προστιθέμενης αξίας.
+	
+	\subsection{Virtual Sensor βασισμένος σε Κανόνες (Rule-based)}
+	Η υπηρεσία \texttt{virtual\_sensor\_rules.py} υπολογίζει την ένταση χρήσης του κάδου σε πραγματικό χρόνο. Διατηρεί μια \textbf{κυλιόμενη χρονική θυρίδα (sliding window)} διάρκειας $W$ λεπτών (π.χ. $W = 10$) και μετράει το πλήθος των γεγονότων κίνησης $E_{count}$. Η κατάσταση έντασης (Usage State) καθορίζεται από τις εξής συνθήκες:
+	\begin{equation}
+		\text{Usage State} = \begin{cases}
+			\text{idle}, & E_{count} = 0 \\
+			\text{low}, & 0 < E_{count} \le 5 \\
+			\text{medium}, & 5 < E_{count} \le 15 \\
+			\text{high}, & E_{count} > 15
+		\end{cases}
+	\end{equation}
+	
+	\subsection{Virtual Sensor βασισμένος σε Μηχανική Μάθηση (ML-based)}
+	Η υπηρεσία \texttt{virtual\_sensor\_ml.py} πραγματοποιεί προβλέψεις για το αν ο κάδος θα είναι πολυάσχολος (\texttt{busy}) ή ήσυχος (\texttt{quiet}) κατά την επόμενη ώρα. 
+	
+	Χρησιμοποιεί ένα μοντέλο \textbf{Random Forest Classifier} (50 estimators), το οποίο εκπαιδεύτηκε (\texttt{train\_model.py}) σε συνθετικά δεδομένα 30 ημερών που προσομοιώνουν ρυθμούς χρήσης ανάλογα με την ώρα και την ημέρα (π.χ. αυξημένη κίνηση τις καθημερινές κατά τις ώρες 11:00-14:00). Το διάνυσμα χαρακτηριστικών εισόδου $\vec{x}$ ορίζεται ως:
+	\begin{equation}
+		\vec{x} = \begin{bmatrix}
+			D_{week} \\
+			H_{next} \\
+			I_{weekend}
+		\end{bmatrix}
+	\end{equation}
+	όπου $D_{week} \in \{0,\dots,6\}$ είναι η ημέρα της εβδομάδας, $H_{next} \in \{0,\dots,23\}$ είναι η επόμενη ώρα και $I_{weekend} \in \{0, 1\}$ είναι δείκτης σαββατοκύριακου. Το μοντέλο επιστρέφει την κλάση πρόβλεψης και το βαθμό εμπιστοσύνης (confidence score) βάσει των πιθανοτήτων της Random Forest:
+	\begin{equation}
+		\hat{y} = \arg\max_{c} P(y = c \mid \vec{x})
+	\end{equation}
+	
+	\section{Low-Code Ενορχήστρωση μέσω Node-RED}
+	Παράλληλα με τον Python αγωγό επεξεργασίας, ενσωματώθηκε η low-code πλατφόρμα \textbf{Node-RED} για την παροχή μιας ευέλικτης στρώσης ενορχήστρωσης, διαχείρισης συμβάντων και οπτικοποίησης.
+	
+	\subsection{Περιγραφή Ροών και Λειτουργιών}
+	Στο Node-RED σχεδιάστηκαν και υλοποιήθηκαν έξι εξειδικευμένες ροές (Flows A έως F):
+	
+	\begin{itemize}
+		\item \textbf{Flow A (Raw Sensor Monitor):} Λαμβάνει τα πρωτογενή σήματα τηλεμετρίας (\texttt{fill\_level}, \texttt{weight}, \texttt{motion}) και τροφοδοτεί τα όργανα του Dashboard.
+		\item \textbf{Flow B (Usage Intensity Replication):} Υλοποιεί μια πλεονάζουσα (redundant) λογική ελέγχου έντασης με κυλιόμενο παράθυρο 5 λεπτών, κατηγοριοποιώντας τη χρήση σε \texttt{LOW}, \texttt{MEDIUM}, \texttt{HIGH} και \texttt{CRITICAL} βάσει του ποσοστού πληρότητας.
+		\item \textbf{Flow C (Alert Engine):} Σε περίπτωση \texttt{CRITICAL} κατάστασης, ενεργοποιεί pop-up ειδοποιήσεις στο Dashboard και στέλνει κλήσεις Webhook προς εξωτερικές υπηρεσίες (Slack).
+		\item \textbf{Flow D (Data Router \& Archiver):} Λαμβάνει όλα τα μηνύματα μέσω wildcard (\texttt{smartbin/\#}) και τα αποθηκεύει σε έναν in-memory \textbf{κυκλικό buffer (circular buffer)} των τελευταίων 100 γεγονότων, ο οποίος είναι προσπελάσιμος μέσω REST API.
+		\item \textbf{Flow E (ML Prediction Listener):} Επεξεργάζεται τις προβλέψεις μηχανικής μάθησης και τις μορφοποιεί σε κομψές κάρτες HTML.
+		\item \textbf{Flow F (Operator Summary Dashboard):} Ένα πλήρες, σκοτεινού θέματος (Catppuccin theme) Operator Dashboard που εμφανίζει live gauges, μετρητές σφαλμάτων, ενεργές ειδοποιήσεις και το χρόνο συνεχούς λειτουργίας του συστήματος (Uptime).
+	\end{itemize}
+	
+	\section{Συμπεράσματα}
+	Η υλοποίηση του συστήματος \textbf{Smart Waste Bin} απέδειξε την αξία του συνδυασμού παραδοσιακών γλωσσών προγραμματισμού (Python) με low-code εργαλεία (Node-RED) σε περιβάλλοντα IoT. Η χρήση του MQTT Broker ως κοινού διαύλου επικοινωνίας επέτρεψε την πλήρη αποσύνδεση (decoupling) των υπηρεσιών, καθιστώντας το σύστημα εξαιρετικά ανθεκτικό σε σφάλματα. 
+	
+	Η σημασιολογική μοντελοποίηση με JSON-LD προσφέρει τη δυνατότητα εύκολης ενσωμάτωσης των δεδομένων σε ευρύτερα οικοσυστήματα έξυπνων πόλεων, ενώ οι εικονικοί αισθητήρες κανόνων και μηχανικής μάθησης παρέχουν στους διαχειριστές πολύτιμη προγνωστική πληροφόρηση, επιτρέποντας τη βελτιστοποίηση των δρομολογίων αποκομιδής και τη μείωση του λειτουργικού κόστους.
+	
+	\section{Github Repository}
+	Ο κώδικας του έργου, οι ρυθμίσεις των εμπορευματοκιβωτίων Docker, τα αρχεία των ροών του Node-RED καθώς και η παρούσα τεχνική αναφορά είναι διαθέσιμα στο αποθετήριο: \\
+	\url{https://github.com/jimfil/smartWasteBinProject}.
+	
+	\begin{thebibliography}{99}
+		\bibitem{sosa_ref} J. Compton et al., "The SSN ontology of the W3C semantic sensor network incubator group," \emph{Journal of Web Semantics}, 2012.
+		\bibitem{mqtt_ref} A. Banks and R. Gupta, "MQTT Version 3.1.1," \emph{OASIS standard}, 2014.
+		\bibitem{random_forest_ref} L. Breiman, "Random Forests," \emph{Machine Learning}, 2001.
+	\end{thebibliography}
+	
+\end{document}

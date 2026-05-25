@@ -18,3 +18,12 @@ src/models/*.joblib
 nodered_data/*
 !nodered_data/flows.json
 hass-config/*
+
+# LaTeX report build artifacts
+report/*.aux
+report/*.out
+report/*.synctex.gz
+report/*.pdf
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
