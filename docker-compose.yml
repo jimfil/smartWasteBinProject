@@ -44,11 +44,11 @@ services:
       - --pin
       - "4"
       - --sample-interval
-      - "0.2"
+      - "0.1"
       - --cooldown
       - "5.0"
       - --min-high
-      - "1.0"
+      - "1.5"
       - --broker
       - "broker"
       - --port
