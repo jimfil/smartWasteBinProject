@@ -643,7 +643,8 @@
             [
                 "1f3125f7c2500a68",
                 "0efcf0f1c772f8ff",
-                "fb9f4eea6ad71650"
+                "fb9f4eea6ad71650",
+                "95d67a00035d587d"
             ]
         ]
     },
@@ -664,7 +665,8 @@
         "wires": [
             [
                 "b9ed8c87765b357e",
-                "a65fcc374b0e4de3"
+                "a65fcc374b0e4de3",
+                "95d67a00035d587d"
             ]
         ]
     },
@@ -680,8 +682,7 @@
         "y": 80,
         "wires": [
             [
-                "531b2dee886d041a",
-                "fb8b96ff67fa8844"
+                "531b2dee886d041a"
             ]
         ]
     },
@@ -733,8 +734,8 @@
         "correl": "",
         "expiry": "",
         "broker": "broker_config_node",
-        "x": 1350,
-        "y": 280,
+        "x": 1370,
+        "y": 260,
         "wires": []
     },
     {
@@ -801,19 +802,21 @@
         ]
     },
     {
-        "id": "fb8b96ff67fa8844",
-        "type": "debug",
+        "id": "95d67a00035d587d",
+        "type": "mqtt out",
         "z": "2a0efe051790fb49",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1380,
-        "y": 140,
+        "name": "",
+        "topic": "smartbin/alerts/current_status",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_config_node",
+        "x": 1170,
+        "y": 380,
         "wires": []
     },
     {

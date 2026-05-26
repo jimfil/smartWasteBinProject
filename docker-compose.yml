@@ -48,7 +48,7 @@ services:
       - --cooldown
       - "5.0"
       - --min-high
-      - "1.3"
+      - "0.5"
       - --broker
       - "broker"
       - --port
