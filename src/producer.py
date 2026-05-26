@@ -104,6 +104,48 @@ def publish_discovery(client, bin_id, sensor_id):
     }
     client.publish(f"homeassistant/button/{bin_id}_ack_alert/config", json.dumps(ack_button_config), retain=True)
 
+    ack_button_config = {
+        "name": f"Acknowledge Alert {bin_id}",
+        "command_topic": "smartbin/nodered/alert_ack",
+        "payload_press": json.dumps({
+            "bin_id": bin_id,
+            "level": "HIGH",  # This will be dynamic later
+            "operator": "HomeAssistant"
+        }),
+        "unique_id": f"{bin_id}_ack_button",
+        "device": {
+            "identifiers": [bin_id],
+            "name": f"Smart Wastebin {bin_id}"
+        },
+        "icon": "mdi:check-circle"
+    }
+    client.publish(
+        f"homeassistant/button/{bin_id}_ack/config",
+        json.dumps(ack_button_config),
+        retain=True
+    )
+
+
+    solved_button_config = {
+        "name": f"Mark Alert Solved {bin_id}",
+        "command_topic": "smartbin/nodered/alert_solved",
+        "payload_press": json.dumps({
+            "bin_id": bin_id,
+            "operator": "HomeAssistant"
+        }),
+        "unique_id": f"{bin_id}_solved_button",
+        "device": {
+            "identifiers": [bin_id],
+            "name": f"Smart Wastebin {bin_id}"
+        },
+        "icon": "mdi:check-all"
+    }
+    client.publish(
+        f"homeassistant/button/{bin_id}_solved/config",
+        json.dumps(solved_button_config),
+        retain=True
+    )
+
 
 @click.command()
 @click.option("--sensor-id", default=DEFAULT_SENSOR_ID, help="URN of the sensor")

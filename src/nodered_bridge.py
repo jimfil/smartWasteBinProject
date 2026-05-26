@@ -152,6 +152,49 @@ def on_message(client, userdata, msg):
                         f.writelines(updated_lines)
         except Exception as e:
             print(f"[Node-RED Bridge] Error processing usage intensity for solve state: {e}", file=sys.stderr, flush=True)
+    # 4. Alert Solved handler (manual override from HA button)
+    elif topic == "smartbin/nodered/alert_solved":
+        try:
+            solved_data = json.loads(payload_str)
+            bin_id = solved_data.get("bin_id", "bin-01")
+            print(f"[Node-RED Bridge] Marking all alerts for {bin_id} as solved", flush=True)
+            
+            # Publish solved confirmation
+            client.publish("smartbin/alerts/solved", json.dumps({
+                "bin_id": bin_id,
+                "solved_at": timestamp,
+                "solved_by": solved_data.get("operator", "Manual")
+            }), qos=1, retain=True)
+            
+            # Update log file to mark all unresolved alerts as solved
+            if os.path.exists(ALERTS_LOG):
+                lines = []
+                with open(ALERTS_LOG, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                
+                count = 0
+                for i in range(len(lines)):
+                    if not lines[i].strip():
+                        continue
+                    try:
+                        record = json.loads(lines[i])
+                        alert_payload = record.get("alert", {})
+                        if (alert_payload.get("bin_id") == bin_id and 
+                            not record.get("solved", False)):
+                            record["solved"] = True
+                            record["solved_at"] = timestamp
+                            lines[i] = json.dumps(record) + "\n"
+                            count += 1
+                    except Exception:
+                        pass
+                
+                with open(ALERTS_LOG, "w", encoding="utf-8") as f:
+                    f.writelines(lines)
+                
+                print(f"[Node-RED Bridge] Marked {count} alerts as solved for {bin_id}", flush=True)
+            
+    except Exception as e:
+        print(f"[Node-RED Bridge] Error marking alerts as solved: {e}", file=sys.stderr, flush=True)
 
 def main():
     global stop_flag
