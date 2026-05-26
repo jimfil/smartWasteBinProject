@@ -28,13 +28,6 @@
         "info": "Filters and logs all smartbin topics. Appends to a 100-event circular buffer and exposes it over GET /nodered/api/recent-events."
     },
     {
-        "id": "d631b67f2112f182",
-        "type": "tab",
-        "label": "Flow E: ML Prediction Listener",
-        "disabled": false,
-        "info": "Listens to ML prediction, renders HTML badge cards, and pushes to Dashboard cards and smartbin/nodered/ml_display."
-    },
-    {
         "id": "69d6bc9e21260366",
         "type": "tab",
         "label": "Flow F: Operator Dashboard & System Services",
@@ -146,22 +139,8 @@
         "name": "Live Sensors",
         "page": "ui_page_ops",
         "width": "6",
-        "height": "1",
+        "height": "2",
         "order": 1,
-        "showTitle": true,
-        "className": "",
-        "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
-    },
-    {
-        "id": "group_virtual_sensors",
-        "type": "ui-group",
-        "name": "Virtual Sensors",
-        "page": "ui_page_ops",
-        "width": "6",
-        "height": "1",
-        "order": 2,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -175,7 +154,7 @@
         "page": "ui_page_ops",
         "width": "6",
         "height": "1",
-        "order": 3,
+        "order": 2,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -189,11 +168,11 @@
         "page": "ui_page_ops",
         "width": "6",
         "height": "1",
-        "order": 4,
+        "order": 3,
         "showTitle": true,
         "className": "",
-        "visible": "true",
-        "disabled": "false",
+        "visible": true,
+        "disabled": false,
         "groupType": "default"
     },
     {
@@ -498,7 +477,6 @@
         "y": 180,
         "wires": [
             [
-                "68c7625ed53ea53f",
                 "6f2fd3b8eacacc20",
                 "link_out_intensity"
             ]
@@ -549,30 +527,6 @@
         "broker": "broker_config_node",
         "x": 840,
         "y": 220,
-        "wires": []
-    },
-    {
-        "id": "68c7625ed53ea53f",
-        "type": "ui-text",
-        "z": "54dcf69a3ae9b875",
-        "group": "group_virtual_sensors",
-        "order": 1,
-        "width": "",
-        "height": "",
-        "name": "Usage Intensity Display",
-        "label": "Usage Level",
-        "format": "<b>{{msg.payload.level}}</b> ({{msg.payload.fill_pct}}%)",
-        "layout": "row-spread",
-        "style": false,
-        "font": "",
-        "fontSize": "",
-        "color": "#000000",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 650,
-        "y": 140,
         "wires": []
     },
     {
@@ -840,8 +794,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1160,
-        "y": 160,
+        "x": 1170,
+        "y": 180,
         "wires": [
             []
         ]
@@ -1007,7 +961,7 @@
         "type": "function",
         "z": "c2309bf37c573735",
         "name": "Circular Event Buffer",
-        "func": "let topic = msg.topic || '';\nif (topic.startsWith('smartbin/nodered/')) { \n    return null; \n}\n\nlet buffer = flow.get('event_buffer') || { virtual: [], sensor: [], alerts: [] };\n\nlet category = 'sensor';\nif (topic.includes('virtual')) category = 'virtual';\nelse if (topic.includes('alerts')) category = 'alerts';\n\nlet record = {\n    topic: topic,\n    payload: msg.payload,\n    timestamp: new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) buffer[category].shift();\n\nflow.set('event_buffer', buffer);\n\nif (category === 'alerts') {\n    let lines = [];\n    let start = Math.max(0, buffer.alerts.length - 10);\n\n    for (let i = buffer.alerts.length - 1; i >= start; i--) {\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n\n        if (typeof parsed === 'string') {\n            try { parsed = JSON.parse(parsed); } catch (e) {}\n        }\n\n        let timeStr = new Date(item.timestamp).toLocaleTimeString();\n\n        if (parsed && typeof parsed === 'object') {\n            let level = parsed.level || 'INFO';\n            let binId = parsed.bin_id || 'bin-01';\n            let fill = parsed.fill_pct ?? '?';\n            let message = parsed.message || `${level} - Bin ${binId} at ${fill}%`;\n\n            lines.push(`- **${timeStr}** | **${level}** | ${message}`);\n        } else {\n            lines.push(`- **${timeStr}** | ${String(parsed)}`);\n        }\n    }\n\n    node.send([null, { payload: lines.join('\\n') || '- No alerts logged yet' }]);\n}\n\nreturn null;",
+        "func": "let topic = msg.topic || '';\nif (topic.startsWith('smartbin/nodered/')) { \n    return null; \n}\n\nlet buffer = flow.get('event_buffer') || { virtual: [], sensor: [], alerts: [] };\n\nlet category = 'sensor';\nif (topic.includes('virtual')) category = 'virtual';\nelse if (topic.includes('alerts')) category = 'alerts';\n\nlet record = {\n    topic: topic,\n    payload: msg.payload,\n    timestamp: new Date().toISOString()\n};\n\nbuffer[category].push(record);\nif (buffer[category].length > 100) buffer[category].shift();\n\nflow.set('event_buffer', buffer);\n\n// Alert display formatting\nif (category === \"alerts\") {\n    let html = '<div style=\"font-family: monospace; font-size: 0.9em; max-height: 180px; overflow-y: auto; padding-right: 6px;\">';\n    let start = Math.max(0, buffer.alerts.length - 10);\n    \n    for (let i = buffer.alerts.length - 1; i >= start; i--) {\n        let item = buffer.alerts[i];\n        let parsed = item.payload;\n        \n        if (typeof parsed === \"string\") {\n            try { parsed = JSON.parse(parsed); } catch(e) {}\n        }\n        \n        let timeStr = new Date(item.timestamp).toLocaleTimeString();\n        \n        if (parsed && typeof parsed === \"object\") {\n            let level = parsed.level || \"INFO\";\n            let binId = parsed.binid || \"bin-01\";\n            let fill = parsed.fillpct ?? \"?\";\n            let message = parsed.message || \"\";\n            \n            let color = level === \"CRITICAL\" ? \"#f38ba8\" : \"#f9e2af\";\n            \n            html += `\n                <div style=\"padding: 8px; margin-bottom: 8px; background-color: #1e1e2e; border-left: 3px solid ${color}; border-radius: 4px;\">\n                    <div style=\"color: #cdd6f4;\">\n                        <span style=\"color: #89b4fa; font-weight: bold;\">${timeStr}</span> | \n                        <span style=\"color: ${color}; font-weight: bold;\">${level}</span>\n                    </div>\n                    <div style=\"color: #a6adc8; margin-top: 4px; font-size: 0.85em;\">${message}</div>\n                </div>\n            `;\n        } else {\n            html += `<div style=\"padding: 8px; color: #a6adc8;\">- ${timeStr} ${String(parsed)}</div>`;\n        }\n    }\n    \n    html += '</div>';\n    \n    if (buffer.alerts.length === 0) {\n        html = '<div style=\"color: #a6adc8; padding: 8px;\">- No alerts logged yet</div>';\n    }\n    \n    node.send([null, { payload: html }]);\n}\n\nreturn null;",
         "outputs": 2,
         "timeout": 0,
         "noerr": 0,
@@ -1019,7 +973,7 @@
         "wires": [
             [],
             [
-                "6b1a7b278e3b3310"
+                "55c80067c0e369d3"
             ]
         ]
     },
@@ -1075,23 +1029,6 @@
         "wires": []
     },
     {
-        "id": "6b1a7b278e3b3310",
-        "type": "ui-markdown",
-        "z": "c2309bf37c573735",
-        "group": "group_alerts",
-        "name": "Alert History",
-        "order": 1,
-        "width": "",
-        "height": "",
-        "content": "{{msg.payload}}",
-        "className": "",
-        "x": 620,
-        "y": 350,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "f962d7c0d1421dfb",
         "type": "ui-text",
         "z": "c2309bf37c573735",
@@ -1116,146 +1053,25 @@
         "wires": []
     },
     {
-        "id": "2dcb36b96b2d1dc8",
-        "type": "mqtt in",
-        "z": "d631b67f2112f182",
-        "name": "Prediction Sub",
-        "topic": "smartbin/bin-01/usage_prediction",
-        "qos": "1",
-        "datatype": "auto-detect",
-        "broker": "broker_config_node",
-        "nl": false,
-        "rap": false,
-        "inputs": 0,
-        "x": 130,
-        "y": 180,
-        "wires": [
-            [
-                "6e136a39734690a3"
-            ]
-        ]
-    },
-    {
-        "id": "6e136a39734690a3",
-        "type": "json",
-        "z": "d631b67f2112f182",
-        "name": "Parse Payload",
-        "property": "payload",
-        "action": "obj",
-        "pretty": false,
-        "x": 320,
-        "y": 180,
-        "wires": [
-            [
-                "9c89c91ec0cde4fc",
-                "088847b471aaec54"
-            ]
-        ]
-    },
-    {
-        "id": "9c89c91ec0cde4fc",
-        "type": "function",
-        "z": "d631b67f2112f182",
-        "name": "Pre-process ML UI Payload",
-        "func": "let prediction = msg.payload.prediction;\nif (Array.isArray(prediction)) prediction = prediction[0];\nlet pred_upper = (prediction || '').toUpperCase();\nmsg.payload.prediction_display = pred_upper;\nmsg.payload.is_busy = (pred_upper === 'BUSY');\nmsg.payload.confidence_display = ((msg.payload.confidence || 0) * 100).toFixed(0) + '%';\nmsg.payload.text_color = msg.payload.is_busy ? '#f38ba8' : '#a6e3a1';\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 360,
-        "y": 100,
-        "wires": [
-            [
-                "4edab4a472a6f882"
-            ]
-        ]
-    },
-    {
-        "id": "4edab4a472a6f882",
-        "type": "template",
-        "z": "d631b67f2112f182",
-        "name": "HTML Card Template",
-        "field": "payload",
-        "fieldType": "msg",
-        "format": "html",
-        "syntax": "mustache",
-        "template": "<div style=\"background-color: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 12px; font-family: sans-serif;\"><h4 style=\"margin: 0 0 8px 0; color: #cdd6f4;\">ML Busy Status Prediction</h4><div style=\"display: flex; justify-content: space-between; align-items: center;\"><span style=\"font-weight: 600; font-size: 1.1em; color: {{payload.text_color}};\">{{payload.prediction_display}}</span><span style=\"background-color: #89b4fa; color: #11111b; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;\">{{payload.confidence_display}} Confidence</span></div><div style=\"margin-top: 8px; font-size: 0.75em; color: #a6adc8;\">Predicted Hour: {{payload.predicted_hour}}:00<br/>Features: {{payload.features_used.day_of_week}}, Hour {{payload.features_used.hour}}</div></div>",
-        "output": "str",
-        "x": 640,
-        "y": 100,
-        "wires": [
-            [
-                "f0619abb748a0b91"
-            ]
-        ]
-    },
-    {
-        "id": "088847b471aaec54",
-        "type": "function",
-        "z": "d631b67f2112f182",
-        "name": "Format display",
-        "func": "let prediction = msg.payload.prediction;\nif (Array.isArray(prediction)) prediction = prediction[0];\nlet ts = msg.payload.utc_prediction_timestamp ? new Date(msg.payload.utc_prediction_timestamp * 1000).toISOString() : new Date().toISOString();\nmsg.payload = { prediction: prediction, confidence: msg.payload.confidence, timestamp: ts, device_id: 'nodered-ml-listener', event_type: 'ml_display', event_time: ts };\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 520,
-        "y": 240,
-        "wires": [
-            [
-                "73f0caeb673cfbf7"
-            ]
-        ]
-    },
-    {
-        "id": "73f0caeb673cfbf7",
-        "type": "json",
-        "z": "d631b67f2112f182",
-        "name": "Stringify Output",
-        "property": "payload",
-        "action": "str",
-        "pretty": false,
-        "x": 720,
-        "y": 240,
-        "wires": [
-            [
-                "dda74fc721024d2e"
-            ]
-        ]
-    },
-    {
-        "id": "dda74fc721024d2e",
-        "type": "mqtt out",
-        "z": "d631b67f2112f182",
-        "name": "Publish ML Display",
-        "topic": "smartbin/nodered/ml_display",
-        "qos": "1",
-        "retain": "true",
-        "respTopic": "",
-        "contentType": "",
-        "userProps": "",
-        "correl": "",
-        "expiry": "",
-        "broker": "broker_config_node",
-        "x": 930,
-        "y": 240,
-        "wires": []
-    },
-    {
-        "id": "f0619abb748a0b91",
+        "id": "55c80067c0e369d3",
         "type": "ui-template",
-        "z": "d631b67f2112f182",
-        "group": "group_virtual_sensors",
-        "name": "ML Prediction Display",
-        "order": 2,
+        "z": "c2309bf37c573735",
+        "group": "group_alerts",
+        "page": "",
+        "ui": "",
+        "name": "Alert History",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
         "format": "<div v-html=\"msg.payload\"></div>",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
         "templateScope": "local",
-        "x": 860,
-        "y": 100,
+        "className": "",
+        "x": 580,
+        "y": 360,
         "wires": [
             []
         ]

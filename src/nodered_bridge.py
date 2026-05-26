@@ -84,26 +84,39 @@ def on_message(client, userdata, msg):
                 "ack_by": ack_data.get("operator", "Node-RED Dashboard")
             }), qos=1, retain=True)
             
-            # Update local log file to mark matching alert as acknowledged
+            # Update local log file to mark the MOST RECENT matching alert as acknowledged
             if os.path.exists(ALERTS_LOG):
-                updated_lines = []
+                lines = []
                 with open(ALERTS_LOG, "r", encoding="utf-8") as f:
-                    for line in f:
-                        if not line.strip():
-                            continue
-                        try:
-                            record = json.loads(line)
-                            alert_payload = record.get("alert", {})
-                            if (alert_payload.get("bin_id") == ack_data.get("bin_id") and 
-                                    alert_payload.get("level") == ack_data.get("level")):
-                                record["acknowledged"] = True
-                                record["acknowledged_at"] = timestamp
-                            updated_lines.append(json.dumps(record) + "\n")
-                        except Exception:
-                            updated_lines.append(line)
+                    lines = f.readlines()
                 
-                with open(ALERTS_LOG, "w", encoding="utf-8") as f:
-                    f.writelines(updated_lines)
+                # Find the most recent unacknowledged alert matching bin_id and level
+                updated = False
+                for i in range(len(lines) - 1, -1, -1):  # Iterate backwards (most recent first)
+                    if not lines[i].strip():
+                        continue
+                    try:
+                        record = json.loads(lines[i])
+                        alert_payload = record.get("alert", {})
+                        if (alert_payload.get("bin_id") == ack_data.get("bin_id") and 
+                            alert_payload.get("level") == ack_data.get("level") and
+                            not record.get("acknowledged", False)):  # Only unacknowledged
+                            record["acknowledged"] = True
+                            record["acknowledged_at"] = timestamp
+                            lines[i] = json.dumps(record) + "\n"
+                            updated = True
+                            print(f"[Node-RED Bridge] Marked alert as acknowledged: {alert_payload.get('bin_id')} - {alert_payload.get('level')}", flush=True)
+                            break  # Stop after updating the first (most recent) match
+                    except Exception:
+                        pass
+    
+    # Write back only if we updated something
+    if updated:
+        with open(ALERTS_LOG, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+        print(f"[Node-RED Bridge] Alert log updated successfully", flush=True)
+    else:
+        print(f"[Node-RED Bridge] No matching unacknowledged alert found", flush=True)
                     
         except Exception as e:
             print(f"[Node-RED Bridge] Error acknowledging alert: {e}", file=sys.stderr, flush=True)
