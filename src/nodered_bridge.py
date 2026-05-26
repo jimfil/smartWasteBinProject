@@ -109,14 +109,13 @@ def on_message(client, userdata, msg):
                             break  # Stop after updating the first (most recent) match
                     except Exception:
                         pass
-    
-    # Write back only if we updated something
-    if updated:
-        with open(ALERTS_LOG, "w", encoding="utf-8") as f:
-            f.writelines(lines)
-        print(f"[Node-RED Bridge] Alert log updated successfully", flush=True)
-    else:
-        print(f"[Node-RED Bridge] No matching unacknowledged alert found", flush=True)
+            # Write back only if we updated something
+            if updated:
+                with open(ALERTS_LOG, "w", encoding="utf-8") as f:
+                    f.writelines(lines)
+                print(f"[Node-RED Bridge] Alert log updated successfully", flush=True)
+            else:
+                print(f"[Node-RED Bridge] No matching unacknowledged alert found", flush=True)
                     
         except Exception as e:
             print(f"[Node-RED Bridge] Error acknowledging alert: {e}", file=sys.stderr, flush=True)
@@ -152,7 +151,9 @@ def on_message(client, userdata, msg):
                         f.writelines(updated_lines)
         except Exception as e:
             print(f"[Node-RED Bridge] Error processing usage intensity for solve state: {e}", file=sys.stderr, flush=True)
-    # 4. Alert Solved handler (manual override from HA button)
+    
+
+        # 4. Alert Solved handler (manual override from HA button)
     elif topic == "smartbin/nodered/alert_solved":
         try:
             solved_data = json.loads(payload_str)
@@ -192,9 +193,9 @@ def on_message(client, userdata, msg):
                     f.writelines(lines)
                 
                 print(f"[Node-RED Bridge] Marked {count} alerts as solved for {bin_id}", flush=True)
-            
-    except Exception as e:
-        print(f"[Node-RED Bridge] Error marking alerts as solved: {e}", file=sys.stderr, flush=True)
+                
+        except Exception as e:
+            print(f"[Node-RED Bridge] Error marking alerts as solved: {e}", file=sys.stderr, flush=True)
 
 def main():
     global stop_flag
