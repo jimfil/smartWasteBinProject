@@ -30,7 +30,7 @@
     {
         "id": "69d6bc9e21260366",
         "type": "tab",
-        "label": "Flow F: Operator Dashboard & System Services",
+        "label": "Flow E: Operator Dashboard & System Services",
         "disabled": false,
         "info": "Consolidates all UI widgets and runs background processes like the Node-RED heartbeat and system uptime counters."
     },
@@ -530,35 +530,6 @@
         "wires": []
     },
     {
-        "id": "b30f77f5440d2142",
-        "type": "inject",
-        "z": "54dcf69a3ae9b875",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{   \"level\": \"CRITICAL\",   \"fill_pct\": 82.5,   \"weight_g\": 3820.0,   \"timestamp\": \"2026-05-22T00:22:05.123Z\" }",
-        "payloadType": "str",
-        "x": 390,
-        "y": 120,
-        "wires": [
-            [
-                "link_out_intensity"
-            ]
-        ]
-    },
-    {
         "id": "link_in_intensity",
         "type": "link in",
         "z": "2a0efe051790fb49",
@@ -641,7 +612,6 @@
         "y": 120,
         "wires": [
             [
-                "1f3125f7c2500a68",
                 "0efcf0f1c772f8ff",
                 "fb9f4eea6ad71650",
                 "95d67a00035d587d"
@@ -664,79 +634,10 @@
         "y": 240,
         "wires": [
             [
-                "b9ed8c87765b357e",
                 "a65fcc374b0e4de3",
                 "95d67a00035d587d"
             ]
         ]
-    },
-    {
-        "id": "1f3125f7c2500a68",
-        "type": "json",
-        "z": "2a0efe051790fb49",
-        "name": "Stringify Alert",
-        "property": "payload",
-        "action": "str",
-        "pretty": false,
-        "x": 1130,
-        "y": 80,
-        "wires": [
-            [
-                "531b2dee886d041a"
-            ]
-        ]
-    },
-    {
-        "id": "531b2dee886d041a",
-        "type": "mqtt out",
-        "z": "2a0efe051790fb49",
-        "name": "Pub Critical Alert",
-        "topic": "smartbin/alerts/critical",
-        "qos": "1",
-        "retain": "false",
-        "respTopic": "",
-        "contentType": "",
-        "userProps": "",
-        "correl": "",
-        "expiry": "",
-        "broker": "broker_config_node",
-        "x": 1350,
-        "y": 80,
-        "wires": []
-    },
-    {
-        "id": "b9ed8c87765b357e",
-        "type": "json",
-        "z": "2a0efe051790fb49",
-        "name": "Stringify Warning",
-        "property": "payload",
-        "action": "str",
-        "pretty": false,
-        "x": 1140,
-        "y": 280,
-        "wires": [
-            [
-                "9d819bf369a08e16"
-            ]
-        ]
-    },
-    {
-        "id": "9d819bf369a08e16",
-        "type": "mqtt out",
-        "z": "2a0efe051790fb49",
-        "name": "Pub Warning Alert",
-        "topic": "smartbin/alerts/warning",
-        "qos": "1",
-        "retain": "false",
-        "respTopic": "",
-        "contentType": "",
-        "userProps": "",
-        "correl": "",
-        "expiry": "",
-        "broker": "broker_config_node",
-        "x": 1370,
-        "y": 260,
-        "wires": []
     },
     {
         "id": "0efcf0f1c772f8ff",
@@ -795,8 +696,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1170,
-        "y": 180,
+        "x": 1230,
+        "y": 60,
         "wires": [
             []
         ]
@@ -815,8 +716,8 @@
         "correl": "",
         "expiry": "",
         "broker": "broker_config_node",
-        "x": 1170,
-        "y": 380,
+        "x": 1250,
+        "y": 320,
         "wires": []
     },
     {
