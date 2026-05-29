@@ -129,9 +129,9 @@ def publish_discovery(client, bin_id, sensor_id):
     # Alert Status Sensor (shows current alert level)
     alert_status_config = {
         "name": f"Alert Status {bin_id}",
-        "state_topic": "smartbin/alerts/current_status",
+        "state_topic": f"smartbin/{bin_id}/alerts/current_status",
         "value_template": "{{ value_json.level }}",
-        "json_attributes_topic": "smartbin/alerts/current_status",
+        "json_attributes_topic": f"smartbin/{bin_id}/alerts/current_status",
         "json_attributes_template": "{{ {'message': value_json.message, 'fill_pct': value_json.fill_pct, 'timestamp': value_json.timestamp} | tojson }}",
         "unique_id": f"{bin_id}_alert_status",
         "device": {
@@ -150,7 +150,7 @@ def publish_discovery(client, bin_id, sensor_id):
     # Alert Message Sensor (shows the full alert message)
     alert_message_config = {
         "name": f"Latest Alert {bin_id}",
-        "state_topic": "smartbin/alerts/current_status",
+        "state_topic": f"smartbin/{bin_id}/alerts/current_status",
         "value_template": "{{ value_json.message }}",
         "unique_id": f"{bin_id}_alert_message",
         "device": {

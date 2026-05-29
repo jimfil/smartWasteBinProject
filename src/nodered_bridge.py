@@ -77,8 +77,9 @@ def on_message(client, userdata, msg):
             print(f"[Node-RED Bridge] Acknowledging alert: {ack_data}", flush=True)
             
             # Forward acknowledgment into main pipeline
-            client.publish("smartbin/alerts/ack", json.dumps({
-                "bin_id": ack_data.get("bin_id", "unknown"),
+            bin_id = ack_data.get("bin_id", "unknown")
+            client.publish(f"smartbin/{bin_id}/alerts/ack", json.dumps({
+                "bin_id": bin_id,
                 "level": ack_data.get("level", "unknown"),
                 "ack_at": timestamp,
                 "ack_by": ack_data.get("operator", "Node-RED Dashboard")
@@ -161,7 +162,7 @@ def on_message(client, userdata, msg):
             print(f"[Node-RED Bridge] Marking all alerts for {bin_id} as solved", flush=True)
             
             # Publish solved confirmation
-            client.publish("smartbin/alerts/solved", json.dumps({
+            client.publish(f"smartbin/{bin_id}/alerts/solved", json.dumps({
                 "bin_id": bin_id,
                 "solved_at": timestamp,
                 "solved_by": solved_data.get("operator", "Manual")

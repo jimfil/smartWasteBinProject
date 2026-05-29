@@ -8,7 +8,7 @@
   "model": "HC-SR501",
   "sosa:observes": "sosa:Motion",
   "ssn:detects": "Changes in infrared radiation from warm bodies (humans) moving within the detection cone",
-  "pipeline:gpioPin": 7,
+  "pipeline:gpioPin": 4,
   "pipeline:operatingVoltage": "5V DC",
   "pipeline:detectionRange": "up to 7 metres",
   "pipeline:detectionAngle": "less than 120 degrees cone",

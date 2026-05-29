@@ -1,4 +1,4 @@
-asyncapi: 3.0.0
+asyncapi: 3.1.0
 info:
   title: Smart Wastebin MQTT Interface
   version: 1.0.0
@@ -80,46 +80,54 @@ channels:
         $ref: '#/components/messages/UsagePrediction'
 
   criticalAlert:
-    address: smartbin/alerts/critical
+    address: smartbin/{bin_id}/alerts/critical
     description: Active high-priority critical fill alert published by Node-RED (fill > 75%)
+    parameters:
+      bin_id:
+        description: Wastebin identifier
     messages:
       criticalAlert:
         $ref: '#/components/messages/CriticalAlert'
 
   warningAlert:
-    address: smartbin/alerts/warning
+    address: smartbin/{bin_id}/alerts/warning
     description: Active warning fill alert published by Node-RED (fill 50% - 75%)
+    parameters:
+      bin_id:
+        description: Wastebin identifier
     messages:
       warningAlert:
         $ref: '#/components/messages/WarningAlert'
 
   alertAckPipeline:
-    address: smartbin/alerts/ack
+    address: smartbin/{bin_id}/alerts/ack
     description: Retained alert acknowledgment forwarded into the main pipeline by the bridge
+    parameters:
+      bin_id:
+        description: Wastebin identifier
     messages:
       alertAck:
         $ref: '#/components/messages/AlertAck'
 
   fillLevelTelemetry:
-    address: smartbin/sensor/fill_level
+    address: smartbin/{bin_id}/fill_level
     description: Mock telemetry topic publishing the current fill level percentage
+    parameters:
+      bin_id:
+        description: Wastebin identifier
     messages:
       fillLevelTelemetry:
         $ref: '#/components/messages/FillLevelTelemetry'
 
   weightTelemetry:
-    address: smartbin/sensor/weight
+    address: smartbin/{bin_id}/weight
     description: Mock telemetry topic publishing the bin weight in grams
+    parameters:
+      bin_id:
+        description: Wastebin identifier
     messages:
       weightTelemetry:
         $ref: '#/components/messages/WeightTelemetry'
-
-  motionTelemetry:
-    address: smartbin/sensor/motion
-    description: Mock telemetry topic publishing raw PIR motion state
-    messages:
-      motionTelemetry:
-        $ref: '#/components/messages/MotionTelemetry'
 
   nodeRedStatus:
     address: smartbin/nodered/status
@@ -243,12 +251,6 @@ operations:
     channel:
       $ref: '#/channels/weightTelemetry'
     summary: Simulator publishes mock weight telemetry
-
-  publishMotionTelemetry:
-    action: send
-    channel:
-      $ref: '#/channels/motionTelemetry'
-    summary: Simulator publishes mock motion telemetry
 
   publishNodeRedStatus:
     action: send
