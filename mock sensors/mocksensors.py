@@ -60,102 +60,54 @@ def decode_pulse_to_distance(pulse_width_seconds):
 
 # Mock Temperature Sensor
 class MockTemperatureSensor:
-    def __init__(self, base_temp=22.0, daily_variance=5.0):
+    def __init__(self, initial_temp_c=22.0):
         """
-        Initializes the mock temperature sensor.
-        :param base_temp: The average baseline room temperature in Celsius.
-        :param daily_variance: How much the temperature swings above/below baseline during the day.
+        Initializes the mock temperature sensor with a fixed value.
+        :param initial_temp_c: The starting temperature in Celsius.
         """
-        self.base_temp = base_temp
-        self.variance = daily_variance
+        self.current_temp_c = float(initial_temp_c)
 
-    def _get_diurnal_offset(self):
+    def set_temperature_celsius(self, new_temp_c):
         """
-        Uses the current system time to simulate a 24-hour temperature cycle.
-        Highest temperatures usually occur in late afternoon, lowest in early morning.
+        Manually update the temperature registered by the sensor.
         """
-        # Get current time components
-        now = time.localtime()
-        current_hour = now.tm_hour + (now.tm_min / 60.0)
-        
-        # Sine wave shifted so peak is roughly at 15:00 (3 PM) and trough at 3:00 AM
-        # Period is 24 hours (2 * pi / 24)
-        angle = (current_hour - 9) * (2 * math.pi / 24)
-        return math.sin(angle) * self.variance
+        self.current_temp_c = float(new_temp_c)
 
     def read_temperature_celsius(self):
         """
-        Simulates reading the sensor. Returns temperature in Celsius.
+        Returns the current temperature in Celsius.
         """
-        # 1. Get the baseline cycle temperature for the current time of day
-        expected_temp = self.base_temp + self._get_diurnal_offset()
-        
-        # 2. Inject random hardware/environmental noise (+/- 0.3°C)
-        noise = random.uniform(-0.3, 0.3)
-        final_temp = expected_temp + noise
-        
-        return round(final_temp, 2)
+        return round(self.current_temp_c, 2)
 
     def read_temperature_fahrenheit(self):
         """
-        Convenience method to return Fahrenheit conversion.
+        Returns the current temperature converted to Fahrenheit.
         Formula: (C * 9/5) + 32
         """
-        celsius = self.read_temperature_celsius()
-        fahrenheit = (celsius * 9/5) + 32
-        return round(fahrenheit, 2) 
+        fahrenheit = (self.current_temp_c * 9/5) + 32
+        return round(fahrenheit, 2)
 
 # Mock Weight Sensor
 class MockWeightSensor:
-    def __init__(self, max_capacity_kg=50.0):
+    def __init__(self, initial_weight_kg=0.0):
         """
-        Initializes the mock load cell sensor.
-        :param max_capacity_kg: The physical maximum limit the scale can handle before maxing out.
+        Initializes the mock weight sensor with a fixed weight.
+        :param initial_weight_kg: The starting weight in kilograms.
         """
-        self.max_capacity = max_capacity_kg
-        self.current_raw_weight = 0.0
-        self.offset = 0.0  # Used for taring/zeroing the scale
+        # Ensure weight cannot be negative
+        self.current_weight = max(0.0, float(initial_weight_kg))
 
-    def tare(self):
+    def set_weight_kg(self, new_weight_kg):
         """
-        Resets the baseline of the scale to 0.0. 
-        Simulates zeroing out the weight of the physical bin liner or container itself.
+        Manually update the weight registered by the sensor.
         """
-        # Set the offset to match the current weight so the net reading becomes zero
-        self.offset = self.current_raw_weight
-        print("[Sensor Action] Scale Tared / Zeroed.")
-
-    def add_trash(self, weight_kg):
-        """
-        Simulates someone physically throwing an item into the bin.
-        """
-        self.current_raw_weight += weight_kg
-        if self.current_raw_weight > self.max_capacity:
-            self.current_raw_weight = self.max_capacity
-
-    def empty_bin(self):
-        """
-        Simulates a waste truck lifting and completely emptying the bin.
-        """
-        self.current_raw_weight = 0.0 + self.offset
+        self.current_weight = max(0.0, float(new_weight_kg))
 
     def read_weight_kg(self):
         """
-        Simulates reading the weight from the HX711/Load Cell circuit.
-        Returns the net weight in kilograms.
+        Returns the current weight reading.
         """
-        # Calculate net weight based on the tare offset
-        net_weight = self.current_raw_weight - self.offset
-        
-        # Inject minor sensor drift/noise typical of load cells (+/- 0.02 kg or 20 grams)
-        noise = random.uniform(-0.02, 0.02)
-        final_reading = net_weight + noise
-        
-        # Real scales don't usually register negative numbers due to noise when empty
-        if final_reading < 0.01:
-            final_reading = 0.0
-            
-        return round(final_reading, 2)
+        return round(self.current_weight, 2)
 
 # Battery Percentage Mock
 class MockBatterySensor:
