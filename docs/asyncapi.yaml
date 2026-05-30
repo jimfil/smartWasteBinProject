@@ -109,25 +109,25 @@ channels:
       alertAck:
         $ref: '#/components/messages/AlertAck'
 
-  fillLevelTelemetry:
-    address: smartbin/{bin_id}/fill_level
-    description: Mock telemetry topic publishing the current fill level percentage
+  ultrasonicEvents:
+    address: smartbin/{bin_id}/ultrasonic-01/events
+    description: Full ultrasonic event records published by the producer
     parameters:
       bin_id:
-        description: Wastebin identifier
+        description: Wastebin identifier (e.g., bin-01)
     messages:
-      fillLevelTelemetry:
-        $ref: '#/components/messages/FillLevelTelemetry'
+      ultrasonicEvent:
+        $ref: '#/components/messages/UltrasonicEvent'
 
-  weightTelemetry:
-    address: smartbin/{bin_id}/weight
-    description: Mock telemetry topic publishing the bin weight in grams
+  weightEvents:
+    address: smartbin/{bin_id}/weight-01/events
+    description: Full weight event records published by the producer
     parameters:
       bin_id:
-        description: Wastebin identifier
+        description: Wastebin identifier (e.g., bin-01)
     messages:
-      weightTelemetry:
-        $ref: '#/components/messages/WeightTelemetry'
+      weightEvent:
+        $ref: '#/components/messages/WeightEvent'
 
   nodeRedStatus:
     address: smartbin/nodered/status
@@ -240,17 +240,17 @@ operations:
       $ref: '#/channels/alertAckPipeline'
     summary: Python bridge publishes an alert acknowledgment into the main pipeline
 
-  publishFillLevelTelemetry:
+  publishUltrasonicEvents:
     action: send
     channel:
-      $ref: '#/channels/fillLevelTelemetry'
-    summary: Simulator publishes mock fill level telemetry
+      $ref: '#/channels/ultrasonicEvents'
+    summary: Simulator publishes mock ultrasonic telemetry events
 
-  publishWeightTelemetry:
+  publishWeightEvents:
     action: send
     channel:
-      $ref: '#/channels/weightTelemetry'
-    summary: Simulator publishes mock weight telemetry
+      $ref: '#/channels/weightEvents'
+    summary: Simulator publishes mock weight telemetry events
 
   publishNodeRedStatus:
     action: send
@@ -496,21 +496,113 @@ components:
             description: Operator or system component that acknowledged the alert
             example: "Node-RED Dashboard"
 
-    FillLevelTelemetry:
-      name: FillLevelTelemetry
-      contentType: text/plain
+    UltrasonicEvent:
+      name: UltrasonicEvent
+      contentType: application/json
       payload:
-        type: string
-        description: Current fill level percentage (0 to 100)
-        example: "45"
+        type: object
+        properties:
+          "@context":
+            type: object
+            description: JSON-LD context reference
+          "@type":
+            type: string
+            description: Observation type
+            example: sosa:Observation
+          device_id:
+            type: string
+            description: Identifier of the device (full URN)
+            example: "urn:dev:team05:ultrasonic-01"
+          sensor_ref:
+            type: string
+            description: URI of the sensor that produced this event
+            example: "urn:dev:team05:ultrasonic-01"
+          wastebin_ref:
+            type: string
+            description: URI of the wastebin this sensor is mounted on
+            example: "urn:wastebin:bin-01"
+          environment_ref:
+            type: string
+            description: URI of the deployment environment
+            example: "urn:env:kypes-02"
+          event_time:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of when the event occurred
+          event_type:
+            type: string
+            description: Type of event detected
+            example: ultrasonic
+          distance_cm:
+            type: number
+            description: Distance to trash in cm
+            example: 12.34
+          fill_pct:
+            type: integer
+            description: Current fill percentage (0 to 100)
+            example: 15
+          pulse_width_s:
+            type: number
+            description: Round-trip echo pulse width in seconds
+            example: 0.000725
+          seq:
+            type: integer
+            description: Sequence number within this pipeline run
+          run_id:
+            type: string
+            description: UUID identifying this pipeline run
 
-    WeightTelemetry:
-      name: WeightTelemetry
-      contentType: text/plain
+    WeightEvent:
+      name: WeightEvent
+      contentType: application/json
       payload:
-        type: string
-        description: Current weight in grams
-        example: "1250"
+        type: object
+        properties:
+          "@context":
+            type: object
+            description: JSON-LD context reference
+          "@type":
+            type: string
+            description: Observation type
+            example: sosa:Observation
+          device_id:
+            type: string
+            description: Identifier of the device (full URN)
+            example: "urn:dev:team05:weight-01"
+          sensor_ref:
+            type: string
+            description: URI of the sensor that produced this event
+            example: "urn:dev:team05:weight-01"
+          wastebin_ref:
+            type: string
+            description: URI of the wastebin this sensor is mounted on
+            example: "urn:wastebin:bin-01"
+          environment_ref:
+            type: string
+            description: URI of the deployment environment
+            example: "urn:env:kypes-02"
+          event_time:
+            type: string
+            format: date-time
+            description: ISO 8601 timestamp of when the event occurred
+          event_type:
+            type: string
+            description: Type of event detected
+            example: weight
+          weight_kg:
+            type: number
+            description: Current weight in kilograms
+            example: 0.52
+          weight_g:
+            type: number
+            description: Current weight in grams
+            example: 520.0
+          seq:
+            type: integer
+            description: Sequence number within this pipeline run
+          run_id:
+            type: string
+            description: UUID identifying this pipeline run
 
     MotionTelemetry:
       name: MotionTelemetry

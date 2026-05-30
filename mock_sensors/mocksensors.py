@@ -370,20 +370,12 @@ def main(bin_id, broker, port, interval, verbose):
             client.publish(w_topic, json.dumps(weight_payload), qos=1)
             client.publish(b_topic, json.dumps(battery_payload), qos=1)
 
-            # 6. Legacy telemetry endpoints for backwards compatibility
-            legacy_fill_topic = f"smartbin/{bin_id}/fill_level"
-            legacy_weight_topic = f"smartbin/{bin_id}/weight"
-
-            client.publish(legacy_fill_topic, str(int(round(state.fill_pct))), qos=1, retain=True)
-            client.publish(legacy_weight_topic, str(round(weight_g, 2)), qos=1, retain=True)
-
             if verbose:
                 print(f"[{timestamp}] Published sequence #{state.seq}:")
                 print(f"  * Fill: {state.fill_pct:.1f}% -> Distance: {distance:.2f} cm (topic: {u_topic})")
                 print(f"  * Temp: {temp_c:.2f}°C / {temp_f:.2f}°F (topic: {t_topic})")
                 print(f"  * Weight: {weight_kg:.2f} kg / {weight_g:.1f} g (topic: {w_topic})")
                 print(f"  * Battery: {battery_pct:.1f}% (topic: {b_topic})")
-                print(f"  * Legacy Fill & Weight published.")
 
             time.sleep(interval)
     except KeyboardInterrupt:

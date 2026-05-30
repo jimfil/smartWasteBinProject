@@ -217,12 +217,12 @@ Once the Docker containers are running:
 ### Implemented Node-RED Flows
 
 1. **Flow A: "Raw Sensor Monitor" (Observer)**
-   * Subscribes in parallel to raw telemetry (`smartbin/sensor/fill_level`, `smartbin/sensor/weight`, `smartbin/sensor/motion`).
+   * Subscribes in parallel to structured JSON-LD telemetry (`smartbin/bin-01/ultrasonic-01/events`, `smartbin/bin-01/weight-01/events`, `smartbin/bin-01/motion`).
    * Enriches messages with a high-resolution timestamp.
-   * Feeds the live gauges and indicators in the Live Sensors Dashboard.
+   * Feeds the live gauges and indicators in the Live Sensors Dashboard by parsing nested values.
 
 2. **Flow B: "Usage Intensity Replication" (Validation Layer)**
-   * Subscribes to `smartbin/sensor/fill_level` and `smartbin/sensor/weight`.
+   * Subscribes to structured events (`smartbin/bin-01/ultrasonic-01/events` and `smartbin/bin-01/weight-01/events`).
    * Manages a **5-minute sliding event window** using Node-RED flow context.
    * Implements a redundant rule validation logic:
      * Fill < 25%: `LOW`
