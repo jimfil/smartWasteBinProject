@@ -188,6 +188,8 @@
 		\hat{y} = \arg\max_{c} P(y = c \mid \vec{x})
 	\end{equation}
 	
+	\textbf{Σημείωση Υλοποίησης:} Επειδή το εκπαιδευμένο μοντέλο δεν αποθηκεύεται απευθείας στον πηγαίο κώδικα, αποτελεί προαπαιτούμενο βήμα η εκτέλεση του σεναρίου \texttt{train\_model.py} για την παραγωγή του αρχείου \texttt{busy\_predictor.joblib}. Μόνο μετά τη δημιουργία του αρχείου αυτού μπορεί να εκκινηθεί επιτυχώς η υπηρεσία \texttt{virtual\_sensor\_ml.py} μέσω του Docker Compose.
+	
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.8\textwidth]{ml_predictions.png}
