@@ -490,5 +490,36 @@ class NodeRedAlertAck(Resource):
         }, 202
 
 
+solve_parser = reqparse.RequestParser()
+solve_parser.add_argument("bin_id", type=str, required=True, help="Bin identifier")
+solve_parser.add_argument("timestamp", type=str, required=True, help="The exact generation timestamp of the alert to solve")
+
+@ns_nodered.route("/alerts/solve")
+class NodeRedAlertSolve(Resource):
+    @ns_nodered.expect(solve_parser)
+    def post(self):
+        """Solve a specific alert by its timestamp"""
+        args = solve_parser.parse_args()
+        bin_id = args.get("bin_id")
+        timestamp = args.get("timestamp")
+        
+        # Publish MQTT command to trigger the bridge updates
+        mqtt_payload = {
+            "bin_id": bin_id,
+            "operator": "REST API",
+            "timestamp": timestamp
+        }
+        
+        mqtt_client.publish(
+            topic="smartbin/nodered/alert_solved",
+            payload=json.dumps(mqtt_payload),
+            qos=1
+        )
+        return {
+            "message": "Solve command forwarded to bridge", 
+            "target_alert_timestamp": timestamp
+        }, 202
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)

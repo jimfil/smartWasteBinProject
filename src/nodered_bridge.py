@@ -162,21 +162,26 @@ def on_message(client, userdata, msg):
             print(f"[Node-RED Bridge] Error processing usage intensity for solve state: {e}", file=sys.stderr, flush=True)
     
 
-        # 4. Alert Solved handler (manual override from HA button)
     elif topic == "smartbin/nodered/alert_solved":
         try:
             solved_data = json.loads(payload_str)
             bin_id = solved_data.get("bin_id", "bin-01")
-            print(f"[Node-RED Bridge] Marking all alerts for {bin_id} as solved", flush=True)
+            target_ts = solved_data.get("timestamp")
+            
+            if target_ts:
+                print(f"[Node-RED Bridge] Marking specific alert as solved: {target_ts}", flush=True)
+            else:
+                print(f"[Node-RED Bridge] Marking all alerts for {bin_id} as solved", flush=True)
             
             # Publish solved confirmation
             client.publish(f"smartbin/{bin_id}/alerts/solved", json.dumps({
                 "bin_id": bin_id,
                 "solved_at": timestamp,
-                "solved_by": solved_data.get("operator", "Manual")
+                "solved_by": solved_data.get("operator", "Manual"),
+                "timestamp": target_ts
             }), qos=1, retain=True)
             
-            # Update log file to mark all unresolved alerts as solved
+            # Update log file
             if os.path.exists(ALERTS_LOG):
                 lines = []
                 with open(ALERTS_LOG, "r", encoding="utf-8") as f:
@@ -189,8 +194,13 @@ def on_message(client, userdata, msg):
                     try:
                         record = json.loads(lines[i])
                         alert_payload = record.get("alert", {})
-                        if (alert_payload.get("bin_id") == bin_id and 
-                            not record.get("solved", False)):
+                        
+                        if target_ts:
+                            is_match = (alert_payload.get("timestamp") == target_ts or record.get("timestamp") == target_ts)
+                        else:
+                            is_match = (alert_payload.get("bin_id") == bin_id)
+                            
+                        if is_match and not record.get("solved", False):
                             record["solved"] = True
                             record["solved_at"] = timestamp
                             lines[i] = json.dumps(record) + "\n"

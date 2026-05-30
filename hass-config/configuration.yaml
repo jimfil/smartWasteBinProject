@@ -11,6 +11,11 @@ rest_command:
     method: POST
     content_type: "application/json"
     payload: '{"bin_id": "{{ bin_id }}", "timestamp": "{{ timestamp }}"}'
+  solve_specific_alert:
+    url: "http://localhost:5000/api/nodered/alerts/solve"
+    method: POST
+    content_type: "application/json"
+    payload: '{"bin_id": "{{ bin_id }}", "timestamp": "{{ timestamp }}"}'
 
 # Fetch the live list of alerts from the Node-RED proxy API
 sensor:
