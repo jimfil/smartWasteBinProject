@@ -18,6 +18,7 @@ src/models/*.joblib
 nodered_data/*
 !nodered_data/flows.json
 hass-config/*
+!hass-config/configuration.yaml
 
 # LaTeX report build artifacts
 report/*.aux

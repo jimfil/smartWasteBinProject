@@ -895,24 +895,86 @@
         "y": 420,
         "wires": [
             [
-                "956e30ee31b6c59c"
+                "fetch_api_request"
             ]
         ]
     },
     {
-        "id": "956e30ee31b6c59c",
+        "id": "fetch_api_request",
+        "type": "http request",
+        "z": "c2309bf37c573735",
+        "name": "Fetch Alerts from API",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://api:5000/api/v1/nodered/alerts",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "timeout": "5000",
+        "x": 380,
+        "y": 420,
+        "wires": [
+            [
+                "retrieve_buffer_func"
+            ]
+        ]
+    },
+    {
+        "id": "retrieve_buffer_func",
         "type": "function",
         "z": "c2309bf37c573735",
-        "name": "Retrieve Buffer",
-        "func": "let buffer = flow.get('event_buffer') || { virtual: [], sensor: [], alerts: [] };\nmsg.payload = buffer;\nreturn msg;",
+        "name": "Handle Backend Response",
+        "func": "if (msg.statusCode && msg.statusCode === 200) {\n    msg.payload = {\n        success: true,\n        source: \"Python Backend API\",\n        alerts: msg.payload\n    };\n    return msg;\n} else {\n    msg.statusCode = msg.statusCode || 502;\n    msg.payload = {\n        success: false,\n        error: \"Backend API returned an error status.\",\n        detail: msg.payload || \"No response details available.\"\n    };\n    return msg;\n}",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 380,
+        "x": 640,
         "y": 420,
+        "wires": [
+            [
+                "50a02a7999a5cfa9"
+            ]
+        ]
+    },
+    {
+        "id": "api_catch_node",
+        "type": "catch",
+        "z": "c2309bf37c573735",
+        "name": "Catch API Offline Error",
+        "scope": [
+            "fetch_api_request"
+        ],
+        "uncaught": false,
+        "x": 380,
+        "y": 480,
+        "wires": [
+            [
+                "format_timeout_error"
+            ]
+        ]
+    },
+    {
+        "id": "format_timeout_error",
+        "type": "function",
+        "z": "c2309bf37c573735",
+        "name": "Format Timeout Error",
+        "func": "msg.statusCode = 504;\nmsg.payload = {\n    success: false,\n    error: \"Gateway Connection Error\",\n    message: \"The Python Backend API is unreachable or timed out.\"\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 480,
         "wires": [
             [
                 "50a02a7999a5cfa9"
@@ -928,7 +990,7 @@
         "headers": {
             "content-type": "application/json"
         },
-        "x": 600,
+        "x": 880,
         "y": 420,
         "wires": []
     },

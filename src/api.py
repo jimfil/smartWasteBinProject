@@ -453,5 +453,39 @@ class NodeRedAlertList(Resource):
         return alerts, 200
 
 
+ack_parser = reqparse.RequestParser()
+ack_parser.add_argument("bin_id", type=str, required=True, help="Bin identifier")
+ack_parser.add_argument("level", type=str, default="ACK", help="Alert level")
+ack_parser.add_argument("timestamp", type=str, required=True, help="The exact generation timestamp of the alert to acknowledge")
+
+@ns_nodered.route("/alerts/ack")
+class NodeRedAlertAck(Resource):
+    @ns_nodered.expect(ack_parser)
+    def post(self):
+        """Acknowledge a specific alert by its timestamp"""
+        args = ack_parser.parse_args()
+        bin_id = args.get("bin_id")
+        level = args.get("level")
+        timestamp = args.get("timestamp")
+        
+        # Publish MQTT command to trigger the bridge updates
+        mqtt_payload = {
+            "bin_id": bin_id,
+            "level": level,
+            "operator": "REST API",
+            "timestamp": timestamp
+        }
+        
+        mqtt_client.publish(
+            topic="smartbin/nodered/alert_ack",
+            payload=json.dumps(mqtt_payload),
+            qos=1
+        )
+        return {
+            "message": "Acknowledgment command forwarded to bridge", 
+            "target_alert_timestamp": timestamp
+        }, 202
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
