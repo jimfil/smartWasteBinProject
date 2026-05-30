@@ -100,7 +100,7 @@ def on_message(client, userdata, msg):
                         record = json.loads(lines[i])
                         alert_payload = record.get("alert", {})
                         if (alert_payload.get("bin_id") == ack_data.get("bin_id") and 
-                            alert_payload.get("level") == ack_data.get("level") and
+                            (ack_data.get("level") == "ACK" or alert_payload.get("level") == ack_data.get("level")) and
                             not record.get("acknowledged", False)):  # Only unacknowledged
                             record["acknowledged"] = True
                             record["acknowledged_at"] = timestamp
