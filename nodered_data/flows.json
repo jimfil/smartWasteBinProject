@@ -763,7 +763,7 @@
             },
             {
                 "t": "regex",
-                "v": "^smartbin/bin-01/alerts/",
+                "v": "^smartbin/bin-01/alerts/current_status$",
                 "vt": "str",
                 "case": false
             }
