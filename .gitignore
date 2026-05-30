@@ -19,6 +19,11 @@ nodered_data/*
 !nodered_data/flows.json
 hass-config/*
 !hass-config/configuration.yaml
+!hass-config/automations.yaml
+!hass-config/scripts.yaml
+!hass-config/scenes.yaml
+!hass-config/groups.yaml
+
 
 # LaTeX report build artifacts
 report/*.aux

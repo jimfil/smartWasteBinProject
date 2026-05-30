@@ -1,0 +1,31 @@
+- id: '1778760205950'
+  alias: Count motion events
+  description: This is an automation for incrementing motion events
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.pir_sensor_pir_01_pir_motion_sensor_pir_01
+  conditions: []
+  actions:
+  - action: counter.increment
+    metadata: {}
+    target:
+      entity_id: counter.wastebin_motion_count
+    data: {}
+  mode: single
+- id: '1778760325617'
+  alias: Motion alert
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.pir_sensor_pir_01_pir_motion_sensor_pir_01
+  conditions: []
+  actions:
+  - action: persistent_notification.create
+    metadata: {}
+    data:
+      message: Motion detected at Smart Wastebin 01 — {{ now().strftime('%H:%M:%S')
+        }}
+      title: Wastebin Alert
+  mode: single
