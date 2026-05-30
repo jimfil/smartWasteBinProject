@@ -22,6 +22,8 @@ hass-config/*
 !hass-config/automations.yaml
 !hass-config/scripts.yaml
 !hass-config/scenes.yaml
+!hass-config/groups.yaml
+
 
 # LaTeX report build artifacts
 report/*.aux
