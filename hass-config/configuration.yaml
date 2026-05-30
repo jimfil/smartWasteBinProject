@@ -1,0 +1,17 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Enable the Frontend dashboard UI
+frontend:
+
+# Configure the REST command to acknowledge specific alerts via the Python REST API
+rest_command:
+  ack_specific_alert:
+    url: "http://api:5000/api/nodered/alerts/ack"
+    method: POST
+    content_type: "application/json"
+    payload: '{"bin_id": "{{ bin_id }}", "timestamp": "{{ timestamp }}"}'
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

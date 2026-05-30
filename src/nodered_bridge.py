@@ -91,7 +91,9 @@ def on_message(client, userdata, msg):
                 with open(ALERTS_LOG, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                 
-                # Find the most recent unacknowledged alert matching bin_id and level
+                target_ts = ack_data.get("timestamp")
+                
+                # Find the target alert to acknowledge
                 updated = False
                 for i in range(len(lines) - 1, -1, -1):  # Iterate backwards (most recent first)
                     if not lines[i].strip():
@@ -99,15 +101,21 @@ def on_message(client, userdata, msg):
                     try:
                         record = json.loads(lines[i])
                         alert_payload = record.get("alert", {})
-                        if (alert_payload.get("bin_id") == ack_data.get("bin_id") and 
-                            (ack_data.get("level") == "ACK" or alert_payload.get("level") == ack_data.get("level")) and
-                            not record.get("acknowledged", False)):  # Only unacknowledged
+                        
+                        # Match condition
+                        if target_ts:
+                            is_match = (alert_payload.get("timestamp") == target_ts or record.get("timestamp") == target_ts)
+                        else:
+                            is_match = (alert_payload.get("bin_id") == ack_data.get("bin_id") and 
+                                        (ack_data.get("level") == "ACK" or alert_payload.get("level") == ack_data.get("level")))
+                                        
+                        if is_match and not record.get("acknowledged", False):  # Only unacknowledged
                             record["acknowledged"] = True
                             record["acknowledged_at"] = timestamp
                             lines[i] = json.dumps(record) + "\n"
                             updated = True
                             print(f"[Node-RED Bridge] Marked alert as acknowledged: {alert_payload.get('bin_id')} - {alert_payload.get('level')}", flush=True)
-                            break  # Stop after updating the first (most recent) match
+                            break  # Stop after updating
                     except Exception:
                         pass
             # Write back only if we updated something
