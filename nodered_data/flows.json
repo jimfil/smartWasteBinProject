@@ -907,7 +907,7 @@
         "method": "GET",
         "ret": "obj",
         "paytoqs": "ignore",
-        "url": "http://api:5000/api/v1/nodered/alerts",
+        "url": "http://api:5000/api/nodered/alerts",
         "tls": "",
         "persist": false,
         "proxy": "",
