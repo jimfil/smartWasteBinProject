@@ -1,0 +1,25 @@
+ack_alert_with_notification:
+  alias: "Acknowledge Target Alert"
+  sequence:
+    - action: rest_command.ack_specific_alert
+      data:
+        bin_id: "{{ bin_id }}"
+        timestamp: "{{ timestamp }}"
+    - action: persistent_notification.create
+      data:
+        title: "Alert Acknowledged"
+        message: "Successfully requested acknowledgment for alert on {{ timestamp }}."
+        notification_id: "alert_ack_notification"
+
+solve_alert_with_notification:
+  alias: "Solve Target Alert"
+  sequence:
+    - action: rest_command.solve_specific_alert
+      data:
+        bin_id: "{{ bin_id }}"
+        timestamp: "{{ timestamp }}"
+    - action: persistent_notification.create
+      data:
+        title: "Alert Solved"
+        message: "Successfully requested solve state for alert on {{ timestamp }}."
+        notification_id: "alert_solve_notification"
