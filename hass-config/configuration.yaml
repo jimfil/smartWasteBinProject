@@ -12,6 +12,15 @@ rest_command:
     content_type: "application/json"
     payload: '{"bin_id": "{{ bin_id }}", "timestamp": "{{ timestamp }}"}'
 
+# Fetch the live list of alerts from the Node-RED proxy API
+sensor:
+  - platform: rest
+    name: recent_bin_alerts
+    resource: "http://nodered:1880/nodered/api/recent-events"
+    value_template: "{{ value_json.alerts | length }}"
+    json_attributes:
+      - alerts
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
