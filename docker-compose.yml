@@ -225,6 +225,33 @@ services:
       - --bin-id
       - "bin-01"
 
+  # Virtual Sensor HA (Home Assistant Bridge)
+  virtual-sensor-ha:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt-virtual-sensor-ha
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    environment:
+      BROKER_HOST: broker
+      BROKER_PORT: 1883
+      PYTHONUNBUFFERED: "1"
+    command:
+      - python
+      - src/virtual_sensor_ha.py
+      - --broker
+      - "broker"
+      - --port
+      - "1883"
+      - --bin-id
+      - "bin-01"
+      - --verbose
+
   # Home Assistant (User Interface and Automation)
   homeassistant:
     image: "ghcr.io/home-assistant/home-assistant:stable"
