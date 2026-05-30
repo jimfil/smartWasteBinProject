@@ -141,7 +141,10 @@ nodered_alert_model = api.model("NodeRedAlert", {
     "topic": fields.String(description="Topic where alert was published"),
     "alert": fields.Raw(description="Raw alert payload detail"),
     "timestamp": fields.String(description="ISO timestamp when alert was logged"),
-    "acknowledged": fields.Boolean(description="Whether the alert was acknowledged")
+    "acknowledged": fields.Boolean(description="Whether the alert was acknowledged"),
+    "acknowledged_at": fields.String(description="ISO timestamp when alert was acknowledged"),
+    "solved": fields.Boolean(description="Whether the alert has been solved"),
+    "solved_at": fields.String(description="ISO timestamp when alert was solved")
 })
 
 events_parser = reqparse.RequestParser()
