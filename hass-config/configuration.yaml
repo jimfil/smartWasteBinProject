@@ -7,7 +7,7 @@ frontend:
 # Configure the REST command to acknowledge specific alerts via the Python REST API
 rest_command:
   ack_specific_alert:
-    url: "http://api:5000/api/nodered/alerts/ack"
+    url: "http://localhost:5000/api/nodered/alerts/ack"
     method: POST
     content_type: "application/json"
     payload: '{"bin_id": "{{ bin_id }}", "timestamp": "{{ timestamp }}"}'
@@ -16,7 +16,7 @@ rest_command:
 sensor:
   - platform: rest
     name: recent_bin_alerts
-    resource: "http://nodered:1880/nodered/api/recent-events"
+    resource: "http://localhost:1880/nodered/api/recent-events"
     value_template: "{{ value_json.alerts | length }}"
     json_attributes:
       - alerts
