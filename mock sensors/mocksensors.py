@@ -4,7 +4,7 @@ import math
 
 # Mock Ultrasonic Sensor
 class MockUltrasonicSensor:
-    def __init__(self, bin_height_cm=14.5):
+    def __init__(self, bin_height_cm=100):
         """
         Initializes the mock sensor.
         :param bin_height_cm: The total depth of the empty bin in centimeters.
@@ -104,3 +104,77 @@ class MockTemperatureSensor:
         celsius = self.read_temperature_celsius()
         fahrenheit = (celsius * 9/5) + 32
         return round(fahrenheit, 2) 
+
+# Mock Weight Sensor
+class MockWeightSensor:
+    def __init__(self, max_capacity_kg=50.0):
+        """
+        Initializes the mock load cell sensor.
+        :param max_capacity_kg: The physical maximum limit the scale can handle before maxing out.
+        """
+        self.max_capacity = max_capacity_kg
+        self.current_raw_weight = 0.0
+        self.offset = 0.0  # Used for taring/zeroing the scale
+
+    def tare(self):
+        """
+        Resets the baseline of the scale to 0.0. 
+        Simulates zeroing out the weight of the physical bin liner or container itself.
+        """
+        # Set the offset to match the current weight so the net reading becomes zero
+        self.offset = self.current_raw_weight
+        print("[Sensor Action] Scale Tared / Zeroed.")
+
+    def add_trash(self, weight_kg):
+        """
+        Simulates someone physically throwing an item into the bin.
+        """
+        self.current_raw_weight += weight_kg
+        if self.current_raw_weight > self.max_capacity:
+            self.current_raw_weight = self.max_capacity
+
+    def empty_bin(self):
+        """
+        Simulates a waste truck lifting and completely emptying the bin.
+        """
+        self.current_raw_weight = 0.0 + self.offset
+
+    def read_weight_kg(self):
+        """
+        Simulates reading the weight from the HX711/Load Cell circuit.
+        Returns the net weight in kilograms.
+        """
+        # Calculate net weight based on the tare offset
+        net_weight = self.current_raw_weight - self.offset
+        
+        # Inject minor sensor drift/noise typical of load cells (+/- 0.02 kg or 20 grams)
+        noise = random.uniform(-0.02, 0.02)
+        final_reading = net_weight + noise
+        
+        # Real scales don't usually register negative numbers due to noise when empty
+        if final_reading < 0.01:
+            final_reading = 0.0
+            
+        return round(final_reading, 2)
+
+# Battery Percentage Mock
+class MockBatterySensor:
+    def __init__(self, initial_pct=100.0):
+        """
+        Initializes the mock battery with a fixed percentage.
+        :param initial_pct: The fixed battery percentage (0.0 to 100.0)
+        """
+        # Ensure the value is locked between 0 and 100 right from the start
+        self.battery_level = max(0.0, min(100.0, float(initial_pct)))
+
+    def set_percentage(self, new_pct):
+        """
+        Manually update the battery to a specific percentage if needed.
+        """
+        self.battery_level = max(0.0, min(100.0, float(new_pct)))
+
+    def read_percentage(self):
+        """
+        Returns the current battery percentage.
+        """
+        return round(self.battery_level, 2)
