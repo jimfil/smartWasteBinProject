@@ -8,3 +8,5 @@ pandas
 scikit-learn
 joblib
 numpy
+seaborn
+matplotlib
