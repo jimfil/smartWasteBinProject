@@ -12,107 +12,20 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR)
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 CHARTS_DIR = os.path.join(PROJECT_ROOT, "charts")
 
-def generate_mock_data():
-    """Generates realistic mock telemetry data to match professor's hints and project goals."""
-    print("Generating comprehensive mock telemetry log: data/mock_data.jsonl...")
-    os.makedirs(DATA_DIR, exist_ok=True)
-    mock_file = os.path.join(DATA_DIR, "mock_data.jsonl")
-    
-    np.random.seed(42)
-    devices = [
-        "urn:dev:team05:ultrasonic-01",
-        "urn:dev:team05:weight-01",
-        "urn:dev:team05:pir-01"
-    ]
-    severities = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-    severity_probs = [0.50, 0.30, 0.15, 0.05]
-    
-    records = []
-    # Generate 300 data points across the past 7 days to have a rich heatmap
-    base_time = pd.Timestamp.now() - pd.Timedelta(days=7)
-    
-    for i in range(300):
-        # Time increment with a circadian pattern (more frequent during daytime hours 8:00 - 20:00)
-        hour = base_time.hour
-        if 8 <= hour <= 20:
-            time_delta_mins = int(np.random.exponential(15)) + 5  # more frequent
-        else:
-            time_delta_mins = int(np.random.exponential(60)) + 15 # less frequent
-            
-        event_time = base_time + pd.Timedelta(minutes=time_delta_mins)
-        base_time = event_time
-        
-        device_id = np.random.choice(devices)
-        # Latency typically follows a log-normal distribution
-        pipeline_latency_ms = float(np.random.lognormal(mean=2.2, sigma=0.4)) + 1.0
-        
-        # Emulating Rule-Based Virtual Sensor (Usage Intensity) based on circadian pattern
-        if 8 <= hour <= 12:
-            base_count = np.random.randint(8, 18)   # Peak morning usage
-        elif 12 < hour <= 17:
-            base_count = np.random.randint(4, 12)   # Moderate afternoon
-        elif 17 < hour <= 22:
-            base_count = np.random.randint(10, 22)  # Evening rush
-        else:
-            base_count = np.random.randint(0, 3)    # Night idle
-            
-        rule_count = int(base_count)
-        if rule_count == 0:
-            rule_state = "IDLE"
-            rule_val = 0
-        elif rule_count <= 5:
-            rule_state = "LOW"
-            rule_val = 1
-        elif rule_count <= 15:
-            rule_state = "MEDIUM"
-            rule_val = 2
-        else:
-            rule_state = "HIGH"
-            rule_val = 3
-            
-        # ML Virtual Sensor predicts state (emulating classification with a bit of noise)
-        ml_val = int(np.clip(rule_val + np.random.choice([-1, 0, 1], p=[0.12, 0.76, 0.12]), 0, 3))
-        ml_states = ["IDLE", "LOW", "MEDIUM", "HIGH"]
-        ml_state = ml_states[ml_val]
-        ml_confidence = float(np.random.uniform(0.68, 0.97))
-        
-        records.append({
-            "event_time": event_time.isoformat() + "Z",
-            "device_id": device_id,
-            "pipeline_latency_ms": round(pipeline_latency_ms, 2),
-            "severity": rule_state if rule_state != "IDLE" else "LOW",
-            "rule_event_count": rule_count,
-            "rule_usage_state": rule_state,
-            "rule_usage_value": rule_val,
-            "ml_predicted_state": ml_state,
-            "ml_predicted_value": ml_val,
-            "ml_prediction_confidence": round(ml_confidence, 3),
-            "fill_pct": int(np.random.randint(0, 100)) if "ultrasonic" in device_id else None,
-            "weight_g": float(np.random.randint(200, 4500)) if "weight" in device_id else None
-        })
-        
-    with open(mock_file, "w", encoding="utf-8") as f:
-        for r in records:
-            f.write(json.dumps(r) + "\n")
-            
-    print(f"Mock telemetry log generated at: {mock_file}")
+
 
 def load_data():
-    """Scans the data/ directory for JSONL, JSON, or LOG telemetry files and loads them into a DataFrame."""
+    """Scans the data/ directory for real JSONL, JSON, or LOG telemetry files and loads them into a DataFrame."""
     os.makedirs(DATA_DIR, exist_ok=True)
     log_files = []
     
-    # Scans for log, json, or jsonl formats to include real production data, ignoring nodered logs
+    # Scans for log, json, or jsonl formats to include real production data, ignoring mock data and nodered logs
     for f in os.listdir(DATA_DIR):
-        if f.endswith((".json", ".jsonl", ".log")) and f != ".gitkeep" and "nodered" not in f:
+        if (f.endswith((".json", ".jsonl", ".log")) 
+            and f != ".gitkeep" 
+            and "nodered" not in f 
+            and "mock" not in f):
             log_files.append(os.path.join(DATA_DIR, f))
-            
-    # Check for mock_data.jsonl first or create it if directory is empty
-    if not log_files:
-        generate_mock_data()
-        for f in os.listdir(DATA_DIR):
-            if f.endswith((".json", ".jsonl", ".log")) and f != ".gitkeep" and "nodered" not in f:
-                log_files.append(os.path.join(DATA_DIR, f))
                 
     dfs = []
     for file_path in log_files:
@@ -175,7 +88,7 @@ def process_data(df):
             unpacked_records.append(row_dict)
         df = pd.DataFrame(unpacked_records)
         
-    # 2. Extract Virtual Sensors Telemetry from MQTT Topics if processing real logs
+    # 2. Extract Virtual Sensors Telemetry from MQTT Topics if processing  logs
     if "topic" in df.columns:
         # Check rule-based intensity levels
         rules_mask = df["topic"] == "smartbin/bin-01/usage_intensity"
@@ -229,11 +142,9 @@ def plot_latency_distribution(df):
     """Generates a high-res histogram with KDE curve tracking pipeline_latency_ms."""
     df_lat = df.dropna(subset=["pipeline_latency_ms"]).copy()
     
-    # Fallback to simulate latency metrics if all real entries are zero (local container runs)
-    if df_lat.empty or (df_lat["pipeline_latency_ms"] == 0).all():
-        print("Real latency values are zero or missing. Simulating realistic network transit latency...")
-        np.random.seed(42)
-        df_lat["pipeline_latency_ms"] = float(np.random.lognormal(mean=2.2, sigma=0.4)) + 1.0
+    if df_lat.empty:
+        print("Skipping latency plot: No latency metrics found.")
+        return
         
     plt.figure(figsize=(10, 6), dpi=300)
     sns.histplot(
@@ -317,15 +228,14 @@ def plot_virtual_sensors_comparison(df):
         print("Skipping predictions comparison chart: No virtual sensor telemetry present.")
         return
         
-    # Standardize and combine them onto a single sorted timeline
-    df_rules = df_rules[["event_time", "rule_usage_value"]]
-    df_ml = df_ml[["event_time", "ml_predicted_value"]]
+    # Standardize and resample both datasets hourly by taking the first value of that hour (to keep fixed levels)
+    df_rules = df_rules[["event_time", "rule_usage_value"]].set_index("event_time").resample("h").first().ffill().reset_index()
+    df_ml = df_ml[["event_time", "ml_predicted_value"]].set_index("event_time").resample("h").first().ffill().reset_index()
     
-    df_combined = pd.concat([df_rules, df_ml]).sort_values(by="event_time")
-    
-    # Forward fill (ffill) the columns so they align on the asynchronous timeline
-    df_combined["rule_usage_value"] = df_combined["rule_usage_value"].ffill()
-    df_combined["ml_predicted_value"] = df_combined["ml_predicted_value"].ffill()
+    # Merge both hourly datasets on a unified chronological timeline
+    df_combined = pd.merge(df_rules, df_ml, on="event_time", how="outer").sort_values(by="event_time")
+    df_combined["rule_usage_value"] = df_combined["rule_usage_value"].ffill().round()
+    df_combined["ml_predicted_value"] = df_combined["ml_predicted_value"].ffill().round()
     
     df_combined = df_combined.dropna(subset=["rule_usage_value", "ml_predicted_value"])
     
@@ -333,13 +243,13 @@ def plot_virtual_sensors_comparison(df):
         print("Skipping comparison chart: No overlapping virtual sensor intervals.")
         return
         
-    # Take the last 50 data points to make the line chart crisp and legible
-    df_plot = df_combined.tail(50)
+    # Take the last 24 hourly intervals (1 full day of operations) for high presentation clarity
+    df_plot = df_combined.tail(24)
     
     plt.figure(figsize=(12, 6), dpi=300)
     
-    # Convert index or time to strings for cleaner x-axis rendering
-    time_labels = df_plot["event_time"].dt.strftime("%m-%d %H:%M")
+    # Convert index or time to strings with hourly format (e.g. "14:00")
+    time_labels = df_plot["event_time"].dt.strftime("%H:00")
     
     plt.plot(
         time_labels, 
@@ -362,7 +272,7 @@ def plot_virtual_sensors_comparison(df):
     )
     
     plt.title("Virtual Sensors Comparison: Rule-Based Usage Intensity vs ML Activity Prediction", fontsize=14, fontweight="bold", pad=15)
-    plt.xlabel("Observation Date & Time Timestamp", fontsize=11, fontweight="semibold", labelpad=10)
+    plt.xlabel("Observation Hour (24h Clock)", fontsize=11, fontweight="semibold", labelpad=10)
     plt.ylabel("Severity/Usage Level", fontsize=11, fontweight="semibold", labelpad=10)
     
     # Setup categorical ticks on y-axis to match exact sensor states
@@ -386,12 +296,12 @@ def plot_event_distribution(df):
         print("Skipping device distribution plot: 'device_id' column not found.")
         return
         
-    plt.figure(figsize=(10, 6), dpi=300)
+    plt.figure(figsize=(7, 6), dpi=300)
     df_plot["device_label"] = df_plot["device_id"].apply(lambda x: x.split(":")[-1] if isinstance(x, str) and ":" in x else str(x))
     
     sns.countplot(
         data=df_plot,
-        x="device_label",
+        y="device_label",
         palette="pastel",
         edgecolor="#1e1e2e",
         hue="device_label",
@@ -399,8 +309,8 @@ def plot_event_distribution(df):
     )
     
     plt.title("Event Distribution Frequency by Tracking Device ID", fontsize=14, fontweight="bold", pad=15)
-    plt.xlabel("Tracking Device (ID Suffix)", fontsize=11, fontweight="semibold", labelpad=10)
-    plt.ylabel("Event Count", fontsize=11, fontweight="semibold", labelpad=10)
+    plt.xlabel("Event Count", fontsize=11, fontweight="semibold", labelpad=10)
+    plt.ylabel("Tracking Device (ID Suffix)", fontsize=11, fontweight="semibold", labelpad=10)
     
     plt.tight_layout()
     output_path = os.path.join(CHARTS_DIR, "event_distribution_by_device.png")
@@ -422,7 +332,7 @@ def plot_severity_distribution(df):
         print("Skipping severity distribution plot: No severity/level column found.")
         return
         
-    plt.figure(figsize=(10, 6), dpi=300)
+    plt.figure(figsize=(7, 6), dpi=300)
     order = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
     
     df_plot[sev_col] = df_plot[sev_col].astype(str).str.upper()
@@ -441,7 +351,7 @@ def plot_severity_distribution(df):
     
     sns.countplot(
         data=df_plot,
-        x=sev_col,
+        y=sev_col,
         order=existing_categories,
         palette=palette,
         edgecolor="#1e1e2e",
@@ -450,8 +360,8 @@ def plot_severity_distribution(df):
     )
     
     plt.title("Waste Accumulation Severity Categorization Profile", fontsize=14, fontweight="bold", pad=15)
-    plt.xlabel("Severity Level", fontsize=11, fontweight="semibold", labelpad=10)
-    plt.ylabel("Recorded Occurrence Frequency", fontsize=11, fontweight="semibold", labelpad=10)
+    plt.xlabel("Recorded Occurrence Frequency", fontsize=11, fontweight="semibold", labelpad=10)
+    plt.ylabel("Severity Level", fontsize=11, fontweight="semibold", labelpad=10)
     
     plt.tight_layout()
     output_path = os.path.join(CHARTS_DIR, "waste_accumulation_severity.png")

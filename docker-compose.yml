@@ -225,12 +225,12 @@ services:
       - --bin-id
       - "bin-01"
 
-  # Virtual Sensor Mock Sensors
-  virtual-sensor-mock-sensors:
+  # Virtual Sensor Generic Data
+  virtual-sensor-generic-data:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mqtt-virtual-sensor-mock-sensors
+    container_name: mqtt-virtual-sensor-generic-data
     depends_on:
       broker:
         condition: service_healthy
@@ -243,7 +243,7 @@ services:
       PYTHONUNBUFFERED: "1"
     command:
       - python
-      - src/virtual_sensor_mock_sensors.py
+      - src/virtual_sensor_generic_data.py
       - --broker
       - "broker"
       - --port
