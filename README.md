@@ -29,6 +29,7 @@ The project is developed incrementally throughout the semester, with each lab in
 - **Structured JSONL logging** with event timestamps, ingest time, and pipeline latency
 - **Live metrics** (produced, consumed, dropped, queue depth) via `--verbose` flag
 - **Dockerized deployment** via `Dockerfile` + `docker-compose.yml` with GPIO pass-through, named volumes, and resource limits
+- **Simulated mock sensors suite**: Generates realistic telemetry (HC-SR04 Ultrasonic distance/fill percentage, Temperature in °C/°F, Weight in kg/g, Battery percentage) for testing and evaluation
 
 ---
 
@@ -42,15 +43,31 @@ smartWasteBinProject/
 ├── mosquitto.conf
 ├── README.md
 ├── requirements.txt
-├── docs/               # Contains the ontology file for our project
-├── data/               # Logs will appear here
-└── src/                # Python scripts
-    ├── archiver.py
-    ├── consumer.py
-    ├── dashboard.py
-    ├── producer.py
-    ├── models/         # JSON-LD context and models
-    └── pirlib/         # PIR sensor utilities
+├── charts/             # Telemetry, performance, and analysis charts
+├── docs/               # Contains formal specifications (Swagger/AsyncAPI) and ontology files
+├── data/               # Logs and archived telemetry data
+├── hass-config/        # Home Assistant configurations
+├── mock_sensors/       # Simulation scripts for hardware testing
+│   └── mocksensors.py  # Simulated sensor suite (Ultrasonic, Temp, Weight, Battery)
+├── nodered_data/       # Node-RED flows and UI assets
+├── presentation/       # Project presentation slides
+├── report/             # LaTeX documentation/report
+└── src/                # Python source code
+    ├── archiver.py     # Subscribes to all topics and archives data
+    ├── consumer.py     # Subscribes to PIR events and writes logs
+    ├── dashboard.py    # Terminal-based real-time event viewer
+    ├── producer.py     # Reads raw GPIO pin values and publishes PIR events
+    ├── api.py          # Flask REST API integrating HTTP endpoints with MQTT
+    ├── apiFunc.py      # Utility functions for Flask REST API and MQTT operations
+    ├── generate_charts.py  # Generates performance plots and telemetry visualizations
+    ├── get-docker.sh   # Automated shell script to install Docker
+    ├── nodered_bridge.py   # Bidirectional Python bridge between Node-RED and MQTT
+    ├── train_model.py  # Trains the Random Forest ML classifier model on synthetic usage data
+    ├── virtual_sensor_generic_data.py # Handles Home Assistant Discovery and publishes states
+    ├── virtual_sensor_ml.py  # Edge ML virtual sensor running predictions
+    ├── virtual_sensor_rules.py # Rule-based virtual sensor calculating usage intensity
+    ├── models/         # JSON-LD contexts and schema models
+    └── pirlib/         # PIR sensor utility library (sampler, interpreter)
 ```
 
 ---
@@ -123,7 +140,19 @@ View live logs and visualizations:
 docker compose up dashboard
 ```
 
+### Running the Mock Sensors
+To simulate telemetry (ultrasonic, temperature, weight, battery percentage) and feed the Home Assistant dashboard, run the mock sensor simulation script on the Raspberry Pi:
+```bash
+python mock_sensors/mocksensors.py
+```
+This script will continually publish simulated sensor readings over MQTT to the broker, allowing you to observe telemetry updates in real-time.
 
+### Accessing the Deployed Services
+Once the Docker containers are running, you can access the following web-based UIs and services:
+- **Home Assistant Dashboard**: `http://localhost:8123`
+- **Node-RED Editor**: `http://localhost:1880`
+- **Operator Dashboard**: `http://localhost:1880/dashboard`
+- **Flask REST API & Swagger UI**: `http://localhost:5000`
 
 Stop the system:
 ```bash
@@ -176,6 +205,14 @@ Model the Smart Waste Bin system using JSON-LD. Describe sensors, the wastebin, 
 ### Milestone 6 - Lab 06: Publish/Subscribe Messaging
 
 Replace your in-process producers–consumers (publisher/subscribers) with MQTT-based communication. Set up a Mosquitto broker, split your pipeline into a standalone components, and define a topic structure for your Smart Waste Bin system. Your publishers and subscribers should run as separate processes that communicate only through the broker.
+
+**Status: Completed**
+
+---
+
+### Milestone 7 — Lab 07 (Lab Milestone): Home Assistant Integration
+
+Integrate the Home Assistant platform as an operator dashboard and automation hub. Expose the system's sensors (both physical PIR and virtual sensors) to Home Assistant via MQTT Discovery, and configure custom notification automations and scripts to manage alerts.
 
 **Status: Completed**
 
