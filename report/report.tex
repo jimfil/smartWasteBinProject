@@ -53,13 +53,15 @@
 	
 	\begin{enumerate}
 		\item \textbf{Broker:} Χρησιμοποιεί το \texttt{eclipse-mosquitto:latest} ως το κεντρικό  σύστημα διανομής μηνυμάτων.
-		\item \textbf{Producer:} Συνδέεται απευθείας με τις θύρες GPIO του Raspberry Pi, λαμβάνει τις μετρήσεις του αισθητήρα, τις φιλτράρει και τις δημοσιεύει στο broker, μαζί με την κατάσταση του έξυπνου κάδου, τον αριθμό χρήσεων του και το ποσοστό χωρητικότητας του κάδου.
-		\item \textbf{Consumer:} Εγγράφεται στα κατάλληλα topics και καταγράφει τα γεγονότα σε δομημένη μορφή JSONL στο αρχείο \texttt{motion\_events.log}.
+		\item \textbf{Producer:} Συνδέεται απευθείας με τις θύρες GPIO του Raspberry Pi, λαμβάνει τις μετρήσεις του αισθητήρα, τις φιλτράρει και τις δημοσιεύει στο broker, μαζί με την κατάσταση και τον αριθμό χρήσεων του κάδου.
+		\item \textbf{Consumer:} Εγγράφεται στα κατάλληλα topics και καταγράφει τα γεγονότα σε μορφή JSONL στο αρχείο \texttt{motion\_events.log}.
 		\item \textbf{Dashboard:} Είναι ένα βασικό dashboard που προβάλλεται από το terminal με JSON Objects, για να παρατηρούμε τη χρήση του κάδου και για να μπορούμε να κάνουμε διορθώσεις in-real-time.
-		\item \textbf{MQTT Archiver :} Αναλαμβάνει τη μόνιμη αρχειοθέτηση όλων των μηνυμάτων της τοπολογίας \texttt{smartbin/\#} στο αρχείο \texttt{archive.log}.
+		\item \textbf{Archiver :} Αναλαμβάνει τη μόνιμη αρχειοθέτηση όλων των μηνυμάτων της τοπολογίας \texttt{smartbin/\#} στο αρχείο \texttt{archive.log}.
 		\item \textbf{REST API:} Μια Flask εφαρμογή που εκθέτει REST endpoints για τη σύγχρονη άντληση της κατάστασης του συστήματος και των αισθητήρων.
 		\item \textbf{Virtual Sensor Rules \& ML:} Δύο ανεξάρτητες υπηρεσίες που επεξεργάζονται τα πρωτογενή γεγονότα κίνησης και παράγουν υψηλότερου επιπέδου πληροφορία (ένταση χρήσης και προβλέψεις).
 		\item \textbf{Home Assistant \& Node-RED:} Οι πλατφόρμες οπτικοποίησης, ελέγχου και low-code αυτοματισμών.
+		\item \textbf{Node-RED Bridge:} Υλοποιεί την αμφίδρομη επικοινωνία μεταξύ του Node-RED και του κεντρικού συστήματος. Διαχειρίζεται την καταγραφή των \emph{alerts} στο \texttt{nodered\_alerts.log}, την επεξεργασία των \emph{acknowledgements} (\emph{ack}) και των \emph{solved states}.
+		\item \textbf{Virtual Sensor Generic Data:} Εγγράφεται στα \emph{topics} των προσομοιωμένων αισθητήρων (ultrasonic, temperature, weight, battery), εξάγει τις τιμές τηλεμετρίας τους και τις δημοσιεύει σε \emph{simplified state topics}. Παράλληλα, αναλαμβάνει το \emph{MQTT Discovery} του Home Assistant, στέλνοντας \emph{discovery config payloads}.
 	\end{enumerate}
 	
 	\section{Ενσωμάτωση Αισθητήρα και Φιλτράρισμα Ψηφιακού Σήματος}
