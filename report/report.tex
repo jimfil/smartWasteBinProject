@@ -7,6 +7,8 @@
 \usepackage{listings}
 \usepackage{url}
 \usepackage{graphicx}
+\usepackage[nottoc]{tocbibind}
+
 
 \babelfont[greek]{rm}{Noto Serif}
 \babelfont[greek]{sf}{Noto Sans}
@@ -18,15 +20,17 @@
 \author{\NoCaseChange{Αθανάσιος Μήτσης 1100944 \& Βασίλειος Ρούσσης 1104685 \& Δημήτριος Φιλόπουλος 1101130}}
 \affiliation{
 	\institution{\newline Τμήμα ΗΜ\&ΤΥ, Πανεπιστήμιο Πατρών}
-	\country{Ελλάδα}
+	\country{Ελλάδα\\\\\\\\\\}
 }
 \captionsetup[table]{position=bottom}
-
+\setcounter{tocdepth}{2}  % 1=sections, 2=subsections, 3=subsubsections
 \renewcommand{\shortauthors}{Α.Μ, Β.Ρ, Δ.Φ.}
 
 \begin{document}
 	
 	\maketitle
+	
+	\tableofcontents
 	
 	\section{Εισαγωγή}
 	
@@ -270,8 +274,9 @@
 	
 	\begin{thebibliography}{99}
 		\bibitem{sosa_ref} J. Compton et al., "The SSN ontology of the W3C semantic sensor network incubator group," \emph{Journal of Web Semantics}, 2012.
-		\bibitem{mqtt_ref} A. Banks and R. Gupta, "MQTT Version 3.1.1," \emph{OASIS standard}, 2014.
-		\bibitem{random_forest_ref} L. Breiman, "Random Forests," \emph{Machine Learning}, 2001.
+		 \bibitem{ck801_course} G. Bouloukakis, "CK801 -- Advanced Programming Techniques (S25--26)," University of Patras, Department of Electrical and Computer Engineering, 2026.  \url{https://gbouloukakis.com/courses/ck801-s26/}
+		 \bibitem{ck801_eclass} G. Bouloukakis, "Προηγμένες Τεχνικές Προγραμματισμού -- CK801: Course Material," \emph{eClass}, University of Patras, 2026. \url{https://eclass.upatras.gr/modules/document/index.php?course=EE1146}
+		 
 	\end{thebibliography}
 	
 \end{document}
